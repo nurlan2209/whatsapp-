@@ -2,12 +2,11 @@
 	"name": "whatsapp-gemini-bot",
 	"version": "1.0.0",
 	"description": "WhatsApp bot with Google Gemini AI and mass messaging",
-	"main": "src/index-advanced.ts",
+	"main": "src/index-baileys.js",
 	"author": "Your Name",
 	"scripts": {
-		"start": "npx vite-node src/index-advanced.ts",
-		"start-simple": "npx vite-node src/index-baileys.ts",
-		"start-old": "npx vite-node src/index.ts",
+		"start": "node src/index-advanced.js",
+		"start-simple": "node src/index-baileys.js",
 		"prettier": "prettier --write ./src"
 	},
 	"license": "MIT",
@@ -18,7 +17,8 @@
 		"dotenv": "^16.3.1",
 		"picocolors": "^1.0.0",
 		"qrcode": "^1.5.3",
-		"qrcode-terminal": "^0.12.0"
+		"qrcode-terminal": "^0.12.0",
+		"vite-node": "latest"
 	},
 	"engines": {
 		"node": ">=18.0.0"

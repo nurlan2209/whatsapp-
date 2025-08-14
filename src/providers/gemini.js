@@ -1,20 +1,20 @@
-import { GoogleGenerativeAI } from "@google/generative-ai";
-import config from "../config";
+const { GoogleGenerativeAI } = require("@google/generative-ai");
+const config = require("../config").default;
 
-export let geminiAI: GoogleGenerativeAI;
-export let geminiModel: any;
+let geminiAI;
+let geminiModel;
 
 // Инициализация Gemini
-export function initGemini() {
+function initGemini() {
     geminiAI = new GoogleGenerativeAI(config.geminiAPIKey);
     // Используем новое название модели
     geminiModel = geminiAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 }
 
 // Хранение контекстов разговоров
-const conversations: { [key: string]: any[] } = {};
+const conversations = {};
 
-export async function generateGeminiResponse(prompt: string, phoneNumber: string): Promise<string> {
+async function generateGeminiResponse(prompt, phoneNumber) {
     try {
         // Получаем историю разговора
         const history = conversations[phoneNumber] || [];
@@ -47,13 +47,19 @@ export async function generateGeminiResponse(prompt: string, phoneNumber: string
         ];
 
         return text;
-    } catch (error: any) {
+    } catch (error) {
         console.error("Gemini API error:", error);
         throw new Error(`Gemini API error: ${error.message}`);
     }
 }
 
 // Очистка контекста разговора
-export function clearGeminiConversation(phoneNumber: string) {
+function clearGeminiConversation(phoneNumber) {
     delete conversations[phoneNumber];
 }
+
+module.exports = {
+    initGemini,
+    generateGeminiResponse,
+    clearGeminiConversation
+};

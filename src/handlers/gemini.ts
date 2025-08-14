@@ -1,12 +1,11 @@
-import { Message } from "whatsapp-web.js";
-import { generateGeminiResponse, clearGeminiConversation } from "../providers/gemini";
 import * as cli from "../cli/ui";
 import config from "../config";
+import { generateGeminiResponse, clearGeminiConversation } from "../providers/gemini";
 
-// Обработка сообщений через Gemini
-const handleMessageGemini = async (message: Message, prompt: string) => {
+// Обработка сообщений через Gemini для Baileys
+const handleMessageGemini = async (sock: any, message: any, prompt: string) => {
 	try {
-		cli.print(`[GEMINI] Received prompt from ${message.from}: ${prompt}`);
+		cli.print(`[GEMINI] Received prompt from ${message.key.remoteJid}: ${prompt}`);
 
 		const start = Date.now();
 
@@ -17,28 +16,28 @@ const handleMessageGemini = async (message: Message, prompt: string) => {
 		}
 
 		// Генерируем ответ через Gemini
-		const response = await generateGeminiResponse(fullPrompt, message.from);
+		const response = await generateGeminiResponse(fullPrompt, message.key.remoteJid || 'unknown');
 
 		const end = Date.now() - start;
 
-		cli.print(`[GEMINI] Answer to ${message.from}: ${response} | Request took ${end}ms`);
+		cli.print(`[GEMINI] Answer to ${message.key.remoteJid}: ${response} | Request took ${end}ms`);
 
-		// Отправляем ответ
-		message.reply(response);
+		// Отправляем ответ через Baileys
+		await sock.sendMessage(message.key.remoteJid, { text: response });
 	} catch (error: any) {
 		console.error("An error occurred", error);
-		message.reply("Произошла ошибка, обратитесь к администратору. (" + error.message + ")");
+		await sock.sendMessage(message.key.remoteJid, { text: "Произошла ошибка, обратитесь к администратору. (" + error.message + ")" });
 	}
 };
 
-// Удаление контекста разговора
-const handleDeleteConversation = async (message: Message) => {
+// Удаление контекста разговора для Baileys
+const handleDeleteConversation = async (sock: any, message: any) => {
 	try {
-		clearGeminiConversation(message.from);
-		message.reply("Контекст разговора сброшен!");
+		clearGeminiConversation(message.key.remoteJid || 'unknown');
+		await sock.sendMessage(message.key.remoteJid, { text: "Контекст разговора сброшен!" });
 	} catch (error: any) {
 		console.error("Error deleting conversation", error);
-		message.reply("Ошибка при сбросе контекста: " + error.message);
+		await sock.sendMessage(message.key.remoteJid, { text: "Ошибка при сбросе контекста: " + error.message });
 	}
 };
 

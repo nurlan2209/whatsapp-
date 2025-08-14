@@ -1,24 +1,5 @@
-import * as fs from 'fs';
-import * as path from 'path';
-import * as cli from '../cli/ui';
-
-// Интерфейсы
-interface Contact {
-    phone: string;
-    name?: string;
-    source?: string; // из какого файла добавлен
-    addedAt: Date;
-    lastSent?: Date;
-    status: 'active' | 'blocked' | 'invalid' | 'pending';
-    sentCount: number;
-}
-
-interface SendingStats {
-    date: string;
-    sentToday: number;
-    lastBatchTime?: Date;
-    totalSent: number;
-}
+const fs = require('fs');
+const path = require('path');
 
 // Файлы для хранения данных
 const CONTACTS_FILE = path.join(process.cwd(), 'data', 'contacts.json');
@@ -42,7 +23,7 @@ const ensureDirectories = () => {
 
 // Лимиты (можно вынести в конфиг)
 const LIMITS = {
-    MAX_NUMBERS_PER_BATCH: parseInt(process.env.MAX_NUMBERS_PER_BATCH || '20'),
+    MAX_NUMBERS_PER_BATCH: parseInt(process.env.MAX_NUMBERS_PER_BATCH || '10'),
     DAILY_MESSAGE_LIMIT: parseInt(process.env.DAILY_MESSAGE_LIMIT || '100'),
     MIN_DELAY_BETWEEN_MESSAGES: parseInt(process.env.MIN_DELAY_BETWEEN_MESSAGES || '5000'), // 5 секунд
     MAX_DELAY_BETWEEN_MESSAGES: parseInt(process.env.MAX_DELAY_BETWEEN_MESSAGES || '10000'), // 10 секунд
@@ -51,14 +32,14 @@ const LIMITS = {
 };
 
 class ContactManager {
-    private contacts: Contact[] = [];
-    private stats: SendingStats = {
-        date: new Date().toISOString().split('T')[0],
-        sentToday: 0,
-        totalSent: 0
-    };
-
     constructor() {
+        this.contacts = [];
+        this.stats = {
+            date: new Date().toISOString().split('T')[0],
+            sentToday: 0,
+            totalSent: 0
+        };
+
         ensureDirectories();
         this.loadContacts();
         this.loadStats();
@@ -66,62 +47,62 @@ class ContactManager {
     }
 
     // Загрузка контактов из файла
-    private loadContacts() {
+    loadContacts() {
         try {
             if (fs.existsSync(CONTACTS_FILE)) {
                 const data = fs.readFileSync(CONTACTS_FILE, 'utf8');
                 this.contacts = JSON.parse(data);
-                cli.print(`📱 Загружено ${this.contacts.length} контактов`);
+                console.log(`📱 Загружено ${this.contacts.length} контактов`);
             }
-        } catch (error: any) {
-            cli.printError(`Ошибка загрузки контактов: ${error.message}`);
+        } catch (error) {
+            console.log(`Ошибка загрузки контактов: ${error.message}`);
             this.contacts = [];
         }
     }
 
     // Сохранение контактов в файл
-    private saveContacts() {
+    saveContacts() {
         try {
             fs.writeFileSync(CONTACTS_FILE, JSON.stringify(this.contacts, null, 2));
-        } catch (error: any) {
-            cli.printError(`Ошибка сохранения контактов: ${error.message}`);
+        } catch (error) {
+            console.log(`Ошибка сохранения контактов: ${error.message}`);
         }
     }
 
     // Загрузка статистики
-    private loadStats() {
+    loadStats() {
         try {
             if (fs.existsSync(STATS_FILE)) {
                 const data = fs.readFileSync(STATS_FILE, 'utf8');
                 this.stats = { ...this.stats, ...JSON.parse(data) };
             }
-        } catch (error: any) {
-            cli.printError(`Ошибка загрузки статистики: ${error.message}`);
+        } catch (error) {
+            console.log(`Ошибка загрузки статистики: ${error.message}`);
         }
     }
 
     // Сохранение статистики
-    private saveStats() {
+    saveStats() {
         try {
             fs.writeFileSync(STATS_FILE, JSON.stringify(this.stats, null, 2));
-        } catch (error: any) {
-            cli.printError(`Ошибка сохранения статистики: ${error.message}`);
+        } catch (error) {
+            console.log(`Ошибка сохранения статистики: ${error.message}`);
         }
     }
 
     // Сброс дневной статистики
-    private resetDailyStatsIfNeeded() {
+    resetDailyStatsIfNeeded() {
         const today = new Date().toISOString().split('T')[0];
         if (this.stats.date !== today) {
             this.stats.date = today;
             this.stats.sentToday = 0;
             this.saveStats();
-            cli.print(`📅 Статистика сброшена для нового дня: ${today}`);
+            console.log(`📅 Статистика сброшена для нового дня: ${today}`);
         }
     }
 
     // Добавление одного контакта
-    addContact(phone: string, name?: string, source?: string): { success: boolean; message: string } {
+    addContact(phone, name, source) {
         if (this.contacts.length >= LIMITS.MAX_CONTACTS_TOTAL) {
             return { 
                 success: false, 
@@ -141,7 +122,7 @@ class ContactManager {
             return { success: false, message: `Номер ${cleanPhone} уже существует` };
         }
 
-        const contact: Contact = {
+        const contact = {
             phone: cleanPhone,
             name,
             source,
@@ -160,8 +141,8 @@ class ContactManager {
     }
 
     // Импорт из файла
-    importFromFile(filePath: string): { success: boolean; added: number; errors: string[] } {
-        const result = { success: false, added: 0, errors: [] as string[] };
+    importFromFile(filePath) {
+        const result = { success: false, added: 0, errors: [] };
         
         try {
             if (!fs.existsSync(filePath)) {
@@ -190,15 +171,15 @@ class ContactManager {
                     } else {
                         result.errors.push(`Строка ${i + 1}: ${addResult.message}`);
                     }
-                } catch (error: any) {
+                } catch (error) {
                     result.errors.push(`Строка ${i + 1}: ${error.message}`);
                 }
             }
 
             result.success = result.added > 0;
-            cli.print(`📁 Импорт из ${filePath}: добавлено ${result.added}, ошибок ${result.errors.length}`);
+            console.log(`📁 Импорт из ${filePath}: добавлено ${result.added}, ошибок ${result.errors.length}`);
 
-        } catch (error: any) {
+        } catch (error) {
             result.errors.push(`Ошибка чтения файла: ${error.message}`);
         }
 
@@ -206,7 +187,7 @@ class ContactManager {
     }
 
     // Получение контактов для отправки
-    getContactsForSending(limit?: number): Contact[] {
+    getContactsForSending(limit) {
         const activeContacts = this.contacts.filter(c => c.status === 'active' || c.status === 'pending');
         const batchSize = Math.min(limit || LIMITS.MAX_NUMBERS_PER_BATCH, LIMITS.MAX_NUMBERS_PER_BATCH);
         
@@ -214,7 +195,7 @@ class ContactManager {
     }
 
     // Проверка лимитов перед отправкой
-    canSendMessages(count: number): { canSend: boolean; reason?: string } {
+    canSendMessages(count) {
         // Проверяем дневной лимит
         if (this.stats.sentToday + count > LIMITS.DAILY_MESSAGE_LIMIT) {
             return {
@@ -239,7 +220,7 @@ class ContactManager {
     }
 
     // Отметка об отправке сообщения
-    markMessageSent(phone: string, success: boolean) {
+    markMessageSent(phone, success) {
         const contact = this.contacts.find(c => c.phone === phone);
         if (contact) {
             contact.lastSent = new Date();
@@ -282,50 +263,36 @@ class ContactManager {
     }
 
     // Получение всех контактов
-    getAllContacts(): Contact[] {
+    getAllContacts() {
         return [...this.contacts];
     }
 
     // Очистка заблокированных контактов
-    cleanBlockedContacts(): number {
+    cleanBlockedContacts() {
         const beforeCount = this.contacts.length;
         this.contacts = this.contacts.filter(c => c.status !== 'blocked');
         const removed = beforeCount - this.contacts.length;
         
         if (removed > 0) {
             this.saveContacts();
-            cli.print(`🧹 Удалено ${removed} заблокированных контактов`);
+            console.log(`🧹 Удалено ${removed} заблокированных контактов`);
         }
         
         return removed;
     }
 
     // Очистка всех контактов
-    clearAllContacts(): number {
+    clearAllContacts() {
         const beforeCount = this.contacts.length;
         this.contacts = [];
         this.saveContacts();
         
-        cli.print(`🗑️ Удалено ${beforeCount} контактов`);
+        console.log(`🗑️ Удалено ${beforeCount} контактов`);
         return beforeCount;
     }
 
-    // Очистка невалидных контактов
-    cleanInvalidContacts(): number {
-        const beforeCount = this.contacts.length;
-        this.contacts = this.contacts.filter(c => this.isValidMobileNumber(c.phone));
-        const removed = beforeCount - this.contacts.length;
-        
-        if (removed > 0) {
-            this.saveContacts();
-            cli.print(`🧹 Удалено ${removed} невалидных контактов`);
-        }
-        
-        return removed;
-    }
-
     // Проверка валидности мобильного номера
-    isValidMobileNumber(phone: string): boolean {
+    isValidMobileNumber(phone) {
         // Проверяем что это мобильный номер (не городской)
         const cleanPhone = phone.replace(/[^\d]/g, '');
         
@@ -341,28 +308,8 @@ class ContactManager {
         }
     }
 
-    // Отметка контакта как невалидного
-    markContactAsInvalid(phone: string) {
-        const contact = this.contacts.find(c => c.phone === phone);
-        if (contact) {
-            contact.status = 'invalid';
-            this.saveContacts();
-        }
-    }
-
-    // Проверка номера в WhatsApp
-    async validateWhatsAppNumber(phone: string, sock: any): Promise<boolean> {
-        try {
-            const cleanPhone = phone.replace('+', '');
-            const [result] = await sock.onWhatsApp(cleanPhone);
-            return result && result.exists;
-        } catch (error) {
-            return false;
-        }
-    }
-
     // Сканирование папки uploads на новые файлы
-    scanUploadsFolder(): string[] {
+    scanUploadsFolder() {
         try {
             if (!fs.existsSync(UPLOADS_DIR)) {
                 return [];
@@ -376,14 +323,14 @@ class ContactManager {
                 .map(file => path.join(UPLOADS_DIR, file));
 
             return files;
-        } catch (error: any) {
-            cli.printError(`Ошибка сканирования папки uploads: ${error.message}`);
+        } catch (error) {
+            console.log(`Ошибка сканирования папки uploads: ${error.message}`);
             return [];
         }
     }
 
     // Получение случайной задержки
-    getRandomDelay(): number {
+    getRandomDelay() {
         return Math.floor(
             Math.random() * (LIMITS.MAX_DELAY_BETWEEN_MESSAGES - LIMITS.MIN_DELAY_BETWEEN_MESSAGES) +
             LIMITS.MIN_DELAY_BETWEEN_MESSAGES
@@ -391,7 +338,7 @@ class ContactManager {
     }
 
     // Форматирование телефона
-    private formatPhone(phone: string): string {
+    formatPhone(phone) {
         let cleaned = phone.replace(/[^\d+]/g, '');
         
         if (cleaned.startsWith('8')) {
@@ -406,9 +353,46 @@ class ContactManager {
     }
 
     // Проверка валидности номера
-    private isValidPhone(phone: string): boolean {
+    isValidPhone(phone) {
         return /^\+\d{10,15}$/.test(phone);
+    }
+
+        // Очистка контактов по статусу
+    cleanContactsByStatus(status) {
+        const beforeCount = this.contacts.length;
+        this.contacts = this.contacts.filter(c => c.status !== status);
+        const removed = beforeCount - this.contacts.length;
+        
+        if (removed > 0) {
+            this.saveContacts();
+            console.log(`🧹 Удалено ${removed} контактов со статусом ${status}`);
+        }
+        
+        return removed;
+    }
+
+    // Очистка контактов в ожидании (pending)
+    cleanPendingContacts() {
+        return this.cleanContactsByStatus('pending');
+    }
+
+    // Принудительное обновление статуса всех контактов в ожидании на invalid
+    markPendingAsInvalid() {
+        let marked = 0;
+        this.contacts.forEach(contact => {
+            if (contact.status === 'pending') {
+                contact.status = 'invalid';
+                marked++;
+            }
+        });
+        
+        if (marked > 0) {
+            this.saveContacts();
+            console.log(`🔄 Помечено ${marked} контактов как недействительные`);
+        }
+        
+        return marked;
     }
 }
 
-export default ContactManager;
+module.exports = ContactManager;
