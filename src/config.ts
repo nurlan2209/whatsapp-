@@ -6,6 +6,13 @@ import { TTSMode } from "./types/tts-mode";
 import dotenv from "dotenv";
 dotenv.config();
 
+// Функция для обработки переносов строк в тексте
+function processMessageText(text: string): string {
+	if (!text) return "";
+	// Заменяем \n на реальные переносы строк
+	return text.replace(/\\n/g, '\n');
+}
+
 // Config Interface
 interface IConfig {
 	// Access control
@@ -68,11 +75,11 @@ export const config: IConfig = {
 	// AI Auto responses
 	aiAutoResponsesEnabled: getEnvBooleanWithDefault("AI_AUTO_RESPONSES_ENABLED", false),
 
-	// Mass messaging texts
-	massMessageText: process.env.MASS_MESSAGE_TEXT || "🤖 Создаю ботов для автоматизации бизнеса! WhatsApp, Telegram, интеграции с CRM. Цены от 50000₸. Бесплатная консультация!",
-	massMessageText1: process.env.MASS_MESSAGE_TEXT_1 || "💼 Привет! Помогаю предпринимателям автоматизировать рутину через ботов. Увеличиваем продажи на 40%. Интересно обсудить?",
-	massMessageText2: process.env.MASS_MESSAGE_TEXT_2 || "🔥 АКЦИЯ! Скидка 30% на создание ботов! Только до конца месяца. Подробности в ЛС.",
-	massMessageText3: process.env.MASS_MESSAGE_TEXT_3 || "⚡ Автоматизация бизнеса под ключ! Боты, чат-боты, интеграции. Экономим время и увеличиваем прибыль!",
+	// Mass messaging texts - обрабатываем из .env с заменой \n
+	massMessageText: processMessageText(process.env.MASS_MESSAGE_TEXT || "Здравствуйте, {НазваниеОрганизации} 🙌\\n\\nМы — студия разработки znstudio.kz.\\nСоздаём современные и удобные сайты, которые помогают бизнесу привлекать клиентов.\\n\\nНаши работы можно увидеть на сайте kartofan.online .\\n\\nЕсли вам будет интересно — с радостью поделимся подробностями.\\nInstagram: @znstudio.kz"),
+	massMessageText1: processMessageText(process.env.MASS_MESSAGE_TEXT_1 || "Добрый день, {НазваниеОрганизации}! 👋\\n\\nСтудия znstudio.kz предлагает создание современных сайтов для развития вашего бизнеса.\\n\\nПримеры наших работ: kartofan.online\\n\\nОбсудим ваш проект? Instagram: @znstudio.kz"),
+	massMessageText2: processMessageText(process.env.MASS_MESSAGE_TEXT_2 || "🔥 Специальное предложение для {НазваниеОрганизации}!\\n\\nСоздание профессионального сайта от znstudio.kz.\\n\\nПортфолио: kartofan.online\\n\\nСвяжемся для обсуждения? Instagram: @znstudio.kz"),
+	massMessageText3: processMessageText(process.env.MASS_MESSAGE_TEXT_3 || "⚡ {НазваниеОрганизации}, автоматизируем ваш бизнес!\\n\\nСовременные сайты и веб-решения от znstudio.kz.\\n\\nНаши кейсы: kartofan.online\\n\\nБесплатная консультация! Instagram: @znstudio.kz"),
 
 	// Speech API
 	speechServerUrl: process.env.SPEECH_API_URL || "https://speech-service.verlekar.com",

@@ -42,12 +42,12 @@ const ensureDirectories = () => {
 
 // Лимиты (можно вынести в конфиг)
 const LIMITS = {
-    MAX_NUMBERS_PER_BATCH: 20,
-    DAILY_MESSAGE_LIMIT: 100,
-    MIN_DELAY_BETWEEN_MESSAGES: 5000, // 5 секунд
-    MAX_DELAY_BETWEEN_MESSAGES: 10000, // 10 секунд
-    BATCH_COOLDOWN: 15 * 60 * 1000, // 15 минут между батчами
-    MAX_CONTACTS_TOTAL: 1000 // максимум контактов всего
+    MAX_NUMBERS_PER_BATCH: parseInt(process.env.MAX_NUMBERS_PER_BATCH || '20'),
+    DAILY_MESSAGE_LIMIT: parseInt(process.env.DAILY_MESSAGE_LIMIT || '100'),
+    MIN_DELAY_BETWEEN_MESSAGES: parseInt(process.env.MIN_DELAY_BETWEEN_MESSAGES || '5000'), // 5 секунд
+    MAX_DELAY_BETWEEN_MESSAGES: parseInt(process.env.MAX_DELAY_BETWEEN_MESSAGES || '10000'), // 10 секунд
+    BATCH_COOLDOWN: parseInt(process.env.BATCH_COOLDOWN || '900000'), // 15 минут между батчами
+    MAX_CONTACTS_TOTAL: parseInt(process.env.MAX_CONTACTS_TOTAL || '1000') // максимум контактов всего
 };
 
 class ContactManager {
@@ -298,6 +298,67 @@ class ContactManager {
         }
         
         return removed;
+    }
+
+    // Очистка всех контактов
+    clearAllContacts(): number {
+        const beforeCount = this.contacts.length;
+        this.contacts = [];
+        this.saveContacts();
+        
+        cli.print(`🗑️ Удалено ${beforeCount} контактов`);
+        return beforeCount;
+    }
+
+    // Очистка невалидных контактов
+    cleanInvalidContacts(): number {
+        const beforeCount = this.contacts.length;
+        this.contacts = this.contacts.filter(c => this.isValidMobileNumber(c.phone));
+        const removed = beforeCount - this.contacts.length;
+        
+        if (removed > 0) {
+            this.saveContacts();
+            cli.print(`🧹 Удалено ${removed} невалидных контактов`);
+        }
+        
+        return removed;
+    }
+
+    // Проверка валидности мобильного номера
+    isValidMobileNumber(phone: string): boolean {
+        // Проверяем что это мобильный номер (не городской)
+        const cleanPhone = phone.replace(/[^\d]/g, '');
+        
+        // Казахстанские мобильные номера: 77XXXXXXXX (10 цифр после +7)
+        // Российские мобильные: 79XXXXXXXX (10 цифр после +7)
+        // Другие страны: минимум 10 цифр
+        if (cleanPhone.startsWith('77')) {
+            return cleanPhone.length === 11; // +77XXXXXXXXX
+        } else if (cleanPhone.startsWith('79')) {
+            return cleanPhone.length === 11; // +79XXXXXXXXX
+        } else {
+            return cleanPhone.length >= 10 && cleanPhone.length <= 15;
+        }
+    }
+
+    // Отметка контакта как невалидного
+    markContactAsInvalid(phone: string) {
+        const contact = this.contacts.find(c => c.phone === phone);
+        if (contact) {
+            contact.status = 'invalid';
+            this.saveContacts();
+        }
+    }
+
+    // Проверка номера в WhatsApp
+    async validateWhatsAppNumber(phone: string, sock: any): Promise<boolean> {
+        try {
+            const cleanPhone = phone.replace('+', '');
+            const [result] = await sock.onWhatsApp(cleanPhone);
+            return result && result.exists;
+        } catch (error) {
+            return false;
+        }
     }
 
     // Сканирование папки uploads на новые файлы

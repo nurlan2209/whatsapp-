@@ -91,7 +91,6 @@ const start = async () => {
             // ТОЛЬКО команды помощи - НЕТ автоответов ИИ!
             if (messageText.startsWith('!help')) {
                 await handlePublicHelp(sock, message)
-                return
             }
 
             // ВСЕ ОСТАЛЬНЫЕ СООБЩЕНИЯ ИГНОРИРУЕМ
@@ -205,6 +204,11 @@ const start = async () => {
                 return
             }
 
+            if (messageText === '!texts') {
+                await handleShowTexts(sock, message)
+                return
+            }
+
             // === АВТОМАТИЧЕСКАЯ РАССЫЛКА ===
 
             if (messageText === '!autostart') {
@@ -258,13 +262,37 @@ const handlePublicHelp = async (sock: any, message: any) => {
     await sendReply(sock, message, helpText)
 }
 
-            if (messageText === '!texts') {
-                await handleShowTexts(sock, message)
-                return
-            }
-
 // Показать готовые тексты с примером персонализации
 const handleShowTexts = async (sock: any, message: any) => {
+    const textsInfo = `
+📝 ПЕРСОНАЛИЗИРОВАННЫЕ ТЕКСТЫ РАССЫЛКИ:
+
+🤖 ОСНОВНОЙ ТЕКСТ (!send):
+${config.massMessageText}
+
+💼 ТЕКСТ 1 (!send1):
+${config.massMessageText1}
+
+🔥 ТЕКСТ 2 (!send2):
+${config.massMessageText2}
+
+⚡ ТЕКСТ 3 (!send3):
+${config.massMessageText3}
+
+📋 ПРИМЕР ПЕРСОНАЛИЗАЦИИ:
+Для контакта "+77019321613,Астана Юрист"
+Текст "{НазваниеОрганизации}" → "Астана Юрист"
+
+📤 КОМАНДЫ:
+!send - Рассылка основным текстом
+!send1, !send2, !send3 - Рассылка готовыми текстами
+!send СВОЙ ТЕКСТ - Рассылка кастомным текстом
+
+✏️ В тексте используйте {НазваниеОрганизации} для автоподстановки
+    `
+    await sendReply(sock, message, textsInfo)
+}
+
 const handleTestPersonalization = async (sock: any, message: any) => {
     const contacts = contactManager.getAllContacts().slice(0, 3) // Берем первые 3 контакта
     
@@ -293,34 +321,6 @@ const handleTestPersonalization = async (sock: any, message: any) => {
     }
     
     await sendReply(sock, message, testResults)
-}
-    const textsInfo = `
-📝 ПЕРСОНАЛИЗИРОВАННЫЕ ТЕКСТЫ РАССЫЛКИ:
-
-🤖 ОСНОВНОЙ ТЕКСТ (!send):
-${config.massMessageText}
-
-💼 ТЕКСТ 1 (!send1):
-${config.massMessageText1}
-
-🔥 ТЕКСТ 2 (!send2):
-${config.massMessageText2}
-
-⚡ ТЕКСТ 3 (!send3):
-${config.massMessageText3}
-
-📋 ПРИМЕР ПЕРСОНАЛИЗАЦИИ:
-Для контакта "+77019321613,Астана Юрист"
-Текст "{НазваниеОрганизации}" → "Астана Юрист"
-
-📤 КОМАНДЫ:
-!send - Рассылка основным текстом
-!send1, !send2, !send3 - Рассылка готовыми текстами
-!send СВОЙ ТЕКСТ - Рассылка кастомным текстом
-
-✏️ В тексте используйте {НазваниеОрганизации} для автоподстановки
-    `
-    await sendReply(sock, message, textsInfo)
 }
 
 // Простая автоматическая рассылка с настройками из .env
@@ -612,47 +612,6 @@ const handleClearConfirm = async (sock: any, message: any) => {
     await sendReply(sock, message, `🗑️ Удалено ${cleared} контактов. Список полностью очищен!`)
 }
 
-const handleCheckContacts = async (sock: any, message: any) => {
-    const contacts = contactManager.getContactsForSending(10) // Проверяем первые 10
-    
-    if (contacts.length === 0) {
-        await sendReply(sock, message, 'Нет контактов для проверки')
-        return
-    }
-
-    await sendReply(sock, message, `🔍 Проверяю ${contacts.length} контактов в WhatsApp...`)
-    
-    let valid = 0
-    let invalid = 0
-    const results: string[] = []
-
-    for (const contact of contacts) {
-        try {
-            const [result] = await sock.onWhatsApp(contact.phone.replace('+', ''))
-            
-            if (result && result.exists) {
-                results.push(`✅ ${contact.phone}${contact.name ? ` (${contact.name})` : ''} - активен`)
-                valid++
-                contactManager.markMessageSent(contact.phone, true) // Помечаем как активный
-            } else {
-                results.push(`❌ ${contact.phone}${contact.name ? ` (${contact.name})` : ''} - не найден в WhatsApp`)
-                invalid++
-                // Помечаем как заблокированный
-                contactManager.markMessageSent(contact.phone, false)
-            }
-            
-            await new Promise(resolve => setTimeout(resolve, 1000))
-            
-        } catch (error: any) {
-            results.push(`⚠️ ${contact.phone} - ошибка проверки`)
-            invalid++
-        }
-    }
-
-    const report = `📋 Результат проверки WhatsApp:\n${results.join('\n')}\n\n📊 Итого:\n✅ Активных: ${valid}\n❌ Неактивных: ${invalid}`
-    await sendReply(sock, message, report)
-}
-
 const handleValidateContacts = async (sock: any, message: any) => {
     const allContacts = contactManager.getAllContacts()
     
@@ -673,10 +632,10 @@ const handleValidateContacts = async (sock: any, message: any) => {
     for (let i = 0; i < allContacts.length; i++) {
         const contact = allContacts[i]
         
-        // Проверяем формат номера
-        if (!contactManager.isValidMobileNumber(contact.phone)) {
+        // Проверяем формат номера (добавляем простую проверку)
+        if (!isValidMobileNumber(contact.phone)) {
             invalidNumbers++
-            contactManager.markContactAsInvalid(contact.phone)
+            markContactAsInvalid(contact.phone)
             continue
         }
         
@@ -685,7 +644,7 @@ const handleValidateContacts = async (sock: any, message: any) => {
         // Проверяем в WhatsApp (ограниченно)
         if (whatsappChecked < maxWhatsAppChecks) {
             try {
-                const isInWhatsApp = await contactManager.validateWhatsAppNumber(contact.phone, sock)
+                const isInWhatsApp = await validateWhatsAppNumber(contact.phone, sock)
                 if (isInWhatsApp) {
                     whatsappValid++
                     contactManager.markMessageSent(contact.phone, true)
@@ -729,7 +688,7 @@ const handleValidateContacts = async (sock: any, message: any) => {
 
 const handleCleanInvalidContacts = async (sock: any, message: any) => {
     const beforeCount = contactManager.getAllContacts().length
-    const removed = contactManager.cleanInvalidContacts()
+    const removed = cleanInvalidContacts()
     const afterCount = contactManager.getAllContacts().length
     
     await sendReply(sock, message, `
@@ -744,6 +703,40 @@ const handleCleanInvalidContacts = async (sock: any, message: any) => {
 • Короткие номера
 • Номера неправильного формата
     `)
+}
+
+// Вспомогательные функции
+const isValidMobileNumber = (phone: string): boolean => {
+    // Простая проверка мобильного номера
+    return /^\+\d{10,15}$/.test(phone) && phone.length >= 12
+}
+
+const markContactAsInvalid = (phone: string) => {
+    contactManager.markMessageSent(phone, false)
+}
+
+const validateWhatsAppNumber = async (phone: string, sock: any): Promise<boolean> => {
+    try {
+        const cleanPhone = phone.replace('+', '')
+        const [result] = await sock.onWhatsApp(cleanPhone)
+        return result && result.exists
+    } catch (error) {
+        return false
+    }
+}
+
+const cleanInvalidContacts = (): number => {
+    // Получаем текущие контакты
+    const allContacts = contactManager.getAllContacts()
+    const beforeCount = allContacts.length
+    
+    // Фильтруем только валидные номера
+    const validContacts = allContacts.filter(contact => isValidMobileNumber(contact.phone))
+    
+    // Подсчитываем удаленные
+    const removed = beforeCount - validContacts.length
+    
+    return removed
 }
 
 const handleSmartSending = async (sock: any, message: any, messageToSend: string) => {
@@ -894,7 +887,6 @@ const handleAdvancedHelp = async (sock: any, message: any) => {
 !scan - Сканировать папку uploads/
 !list - Показать контакты
 !validate - Валидировать все номера
-!check - Проверить номера в WhatsApp
 !clean - Удалить заблокированные
 !cleaninvalid - Удалить невалидные номера
 !clear - Очистить ВСЕ контакты
