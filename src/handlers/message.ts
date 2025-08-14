@@ -1,4 +1,4 @@
-import { Message } from "whatsapp-web.js";
+import { Message, Client } from "whatsapp-web.js";
 import { startsWithIgnoreCase } from "../utils";
 
 // Config & Constants
@@ -7,21 +7,26 @@ import config from "../config";
 // CLI
 import * as cli from "../cli/ui";
 
-// ChatGPT & DALLE
-import { handleMessageGPT, handleDeleteConversation } from "../handlers/gpt";
-import { handleMessageDALLE } from "../handlers/dalle";
-import { handleMessageAIConfig, getConfig, executeCommand } from "../handlers/ai-config";
-import { handleMessageLangChain } from "../handlers/langchain";
+// Gemini handlers
+import { handleMessageGemini, handleDeleteConversation } from "../handlers/gemini";
 
-// Speech API & Whisper
-import { TranscriptionMode } from "../types/transcription-mode";
-import { transcribeRequest } from "../providers/speech";
-import { transcribeAudioLocal } from "../providers/whisper-local";
-import { transcribeWhisperApi } from "../providers/whisper-api";
-import { transcribeOpenAI } from "../providers/openai";
+// Mass messaging
+import { 
+	startMassMessaging, 
+	addPhoneNumber, 
+	showPhoneNumbers, 
+	removePhoneNumber 
+} from "../handlers/mass-messaging";
 
 // For deciding to ignore old messages
 import { botReadyTimestamp } from "../index";
+
+// Глобальная ссылка на клиент (для массовой рассылки)
+let whatsappClient: Client;
+
+export const setWhatsAppClient = (client: Client) => {
+	whatsappClient = client;
+};
 
 // Handles message
 async function handleIncomingMessage(message: Message) {
@@ -31,13 +36,11 @@ async function handleIncomingMessage(message: Message) {
 	if (message.timestamp != null) {
 		const messageTimestamp = new Date(message.timestamp * 1000);
 
-		// If startTimestamp is null, the bot is not ready yet
 		if (botReadyTimestamp == null) {
 			cli.print("Ignoring message because bot is not ready yet: " + messageString);
 			return;
 		}
 
-		// Ignore messages that are sent before the bot is started
 		if (messageTimestamp < botReadyTimestamp) {
 			cli.print("Ignoring old message: " + messageString);
 			return;
@@ -49,123 +52,112 @@ async function handleIncomingMessage(message: Message) {
 
 	const selfNotedMessage = message.fromMe && message.hasQuotedMsg === false && message.from === message.to;
 
+	// Whitelist check
 	if (config.whitelistedEnabled) {
-		const whitelistedPhoneNumbers = getConfig("general", "whitelist");
+		const whitelistedPhoneNumbers = config.whitelistedPhoneNumbers;
 
 		if (!selfNotedMessage && whitelistedPhoneNumbers.length > 0 && !whitelistedPhoneNumbers.includes(message.from)) {
 			cli.print(`Ignoring message from ${message.from} because it is not whitelisted.`);
 			return;
 		}
 	}
-	// Transcribe audio
-	if (message.hasMedia) {
-		const media = await message.downloadMedia();
 
-		// Ignore non-audio media
-		if (!media || !media.mimetype.startsWith("audio/")) return;
-
-		// Check if transcription is enabled (Default: false)
-		if (!getConfig("transcription", "enabled")) {
-			cli.print("[Transcription] Received voice messsage but voice transcription is disabled.");
+	// === КОМАНДЫ МАССОВОЙ РАССЫЛКИ ===
+	
+	// Старт массовой рассылки (!send)
+	if (startsWithIgnoreCase(messageString, "!send")) {
+		if (!selfNotedMessage) {
+			message.reply("Эта команда доступна только отправителю.");
 			return;
 		}
-
-		// Convert media to base64 string
-		const mediaBuffer = Buffer.from(media.data, "base64");
-
-		// Transcribe locally or with Speech API
-		const transcriptionMode = getConfig("transcription", "mode");
-		cli.print(`[Transcription] Transcribing audio with "${transcriptionMode}" mode...`);
-
-		let res;
-		switch (transcriptionMode) {
-			case TranscriptionMode.Local:
-				res = await transcribeAudioLocal(mediaBuffer);
-				break;
-			case TranscriptionMode.OpenAI:
-				res = await transcribeOpenAI(mediaBuffer);
-				break;
-			case TranscriptionMode.WhisperAPI:
-				res = await transcribeWhisperApi(new Blob([mediaBuffer]));
-				break;
-			case TranscriptionMode.SpeechAPI:
-				res = await transcribeRequest(new Blob([mediaBuffer]));
-				break;
-			default:
-				cli.print(`[Transcription] Unsupported transcription mode: ${transcriptionMode}`);
-		}
-		const { text: transcribedText, language: transcribedLanguage } = res;
-
-		// Check transcription is null (error)
-		if (transcribedText == null) {
-			message.reply("I couldn't understand what you said.");
-			return;
-		}
-
-		// Check transcription is empty (silent voice message)
-		if (transcribedText.length == 0) {
-			message.reply("I couldn't understand what you said.");
-			return;
-		}
-
-		// Log transcription
-		cli.print(`[Transcription] Transcription response: ${transcribedText} (language: ${transcribedLanguage})`);
-
-		// Reply with transcription
-		if (config.ttsTranscriptionResponse) {
-			const reply = `You said: ${transcribedText}${transcribedLanguage ? " (language: " + transcribedLanguage + ")" : ""}`;
-			message.reply(reply);
-		}
-
-		// Handle message GPT
-		await handleMessageGPT(message, transcribedText);
+		
+		const customMessage = messageString.substring(5).trim();
+		await startMassMessaging(whatsappClient, message, customMessage || undefined);
 		return;
 	}
 
-	// Clear conversation context (!clear)
+	// Добавить номер (!add +1234567890)
+	if (startsWithIgnoreCase(messageString, "!add")) {
+		if (!selfNotedMessage) {
+			message.reply("Эта команда доступна только отправителю.");
+			return;
+		}
+		
+		const phoneNumber = messageString.substring(4).trim();
+		await addPhoneNumber(message, phoneNumber);
+		return;
+	}
+
+	// Показать список номеров (!list)
+	if (startsWithIgnoreCase(messageString, "!list")) {
+		if (!selfNotedMessage) {
+			message.reply("Эта команда доступна только отправителю.");
+			return;
+		}
+		
+		await showPhoneNumbers(message);
+		return;
+	}
+
+	// Удалить номер (!remove +1234567890)
+	if (startsWithIgnoreCase(messageString, "!remove")) {
+		if (!selfNotedMessage) {
+			message.reply("Эта команда доступна только отправителю.");
+			return;
+		}
+		
+		const phoneNumber = messageString.substring(7).trim();
+		await removePhoneNumber(message, phoneNumber);
+		return;
+	}
+
+	// Помощь по командам (!help)
+	if (startsWithIgnoreCase(messageString, "!help")) {
+		const helpText = `
+Доступные команды:
+
+📤 РАССЫЛКА:
+!send [сообщение] - Начать массовую рассылку
+!add +номер - Добавить номер в список
+!remove +номер - Удалить номер из списка  
+!list - Показать все номера
+
+🤖 AI:
+${config.gptPrefix} текст - Общение с ИИ
+${config.resetPrefix} - Сбросить контекст
+
+⚙️ НАСТРОЙКИ:
+${config.aiConfigPrefix} - Конфигурация бота
+
+Пример рассылки:
+!send Привет! Предлагаю качественные услуги по разработке ботов. Подробности в ЛС.
+		`;
+		message.reply(helpText);
+		return;
+	}
+
+	// === ОСНОВНЫЕ КОМАНДЫ ===
+
+	// Clear conversation context (!reset)
 	if (startsWithIgnoreCase(messageString, config.resetPrefix)) {
 		await handleDeleteConversation(message);
 		return;
 	}
 
-	// AiConfig (!config <args>)
-	if (startsWithIgnoreCase(messageString, config.aiConfigPrefix)) {
-		const prompt = messageString.substring(config.aiConfigPrefix.length + 1);
-		await handleMessageAIConfig(message, prompt);
-		return;
-	}
-
-	// GPT (!gpt <prompt>)
+	// AI Chat (!ai <prompt>)
 	if (startsWithIgnoreCase(messageString, config.gptPrefix)) {
 		const prompt = messageString.substring(config.gptPrefix.length + 1);
-		await handleMessageGPT(message, prompt);
+		if (prompt.trim() === "") {
+			message.reply("Напишите ваш вопрос после команды " + config.gptPrefix);
+			return;
+		}
+		await handleMessageGemini(message, prompt);
 		return;
 	}
 
-	// GPT (!lang <prompt>)
-	if (startsWithIgnoreCase(messageString, config.langChainPrefix)) {
-		const prompt = messageString.substring(config.langChainPrefix.length + 1);
-		await handleMessageLangChain(message, prompt);
-		return;
-	}
-
-	// DALLE (!dalle <prompt>)
-	if (startsWithIgnoreCase(messageString, config.dallePrefix)) {
-		const prompt = messageString.substring(config.dallePrefix.length + 1);
-		await handleMessageDALLE(message, prompt);
-		return;
-	}
-
-	// Stable Diffusion (!sd <prompt>)
-	if (startsWithIgnoreCase(messageString, config.stableDiffusionPrefix)) {
-		const prompt = messageString.substring(config.stableDiffusionPrefix.length + 1);
-		await executeCommand("sd", "generate", message, prompt);
-		return;
-	}
-
-	// GPT (only <prompt>)
+	// AI без префикса (только для сообщений себе)
 	if (!config.prefixEnabled || (config.prefixSkippedForMe && selfNotedMessage)) {
-		await handleMessageGPT(message, messageString);
+		await handleMessageGemini(message, messageString);
 		return;
 	}
 }
