@@ -1,0 +1,29 @@
+[
+  {
+    "phone": "+77758524891",
+    "name": "Нурлан",
+    "source": "part_1.txt",
+    "addedAt": "2025-08-14T17:56:10.549Z",
+    "status": "active",
+    "sentCount": 2,
+    "lastSent": "2025-08-14T18:27:51.167Z"
+  },
+  {
+    "phone": "+77762538632",
+    "name": "Жаркын",
+    "source": "part_1.txt",
+    "addedAt": "2025-08-14T17:56:10.550Z",
+    "status": "active",
+    "sentCount": 2,
+    "lastSent": "2025-08-14T18:27:58.004Z"
+  },
+  {
+    "phone": "+77785165964",
+    "name": "SpaceX",
+    "source": "part_1.txt",
+    "addedAt": "2025-08-14T18:27:27.231Z",
+    "status": "active",
+    "sentCount": 1,
+    "lastSent": "2025-08-14T18:28:08.346Z"
+  }
+]

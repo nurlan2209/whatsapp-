@@ -9,6 +9,10 @@ import ContactManager from './utils/contact-manager';
 let botReadyTimestamp: Date | null = null;
 let contactManager: ContactManager;
 
+// Переменные для автоматической рассылки
+let autoSendingActive = false;
+let autoSendingInterval: NodeJS.Timeout | null = null;
+
 const start = async () => {
     cli.printIntro();
 
@@ -69,7 +73,7 @@ const start = async () => {
     // Сохранение учетных данных
     sock.ev.on('creds.update', saveCreds)
 
-    // Обработка входящих сообщений
+    // Обработка входящих сообщений от других пользователей
     sock.ev.on('messages.upsert', async (m) => {
         const message = m.messages[0]
         
@@ -84,31 +88,25 @@ const start = async () => {
         cli.print(`[INCOMING MESSAGE] From ${message.key.remoteJid}: ${messageText}`)
 
         try {
-            // AI команды от других пользователей
-            if (messageText.startsWith('!ai') || messageText.startsWith('!gpt')) {
-                const prompt = messageText.replace(/^!(ai|gpt)\s*/, '')
-                if (prompt.trim()) {
-                    await handleAI(sock, message, prompt)
-                }
-                return
-            }
-
+            // ТОЛЬКО команды помощи - НЕТ автоответов ИИ!
             if (messageText.startsWith('!help')) {
-                await handleHelp(sock, message)
+                await handlePublicHelp(sock, message)
                 return
             }
 
+            // ВСЕ ОСТАЛЬНЫЕ СООБЩЕНИЯ ИГНОРИРУЕМ
+            
         } catch (error: any) {
             cli.printError(`Error handling incoming message: ${error.message}`)
         }
     })
 
-    // Обработка собственных сообщений (команды управления)
+    // Обработка собственных сообщений (команды управления) - ТОЛЬКО ДЛЯ СОБСТВЕННЫХ СООБЩЕНИЙ
     sock.ev.on('messages.upsert', async (m) => {
         const message = m.messages[0]
         
         if (!message.message) return
-        if (message.key.fromMe !== true) return
+        if (message.key.fromMe !== true) return // ТОЛЬКО свои сообщения
         
         const messageText = message.message.conversation || 
                            message.message.extendedTextMessage?.text || ''
@@ -130,40 +128,97 @@ const start = async () => {
                 return
             }
 
-            if (messageText.startsWith('!scan')) {
+            if (messageText === '!scan') {
                 await handleScanUploads(sock, message)
                 return
             }
 
-            if (messageText.startsWith('!list')) {
+            if (messageText === '!list') {
                 await handleListContacts(sock, message)
                 return
             }
 
-            if (messageText.startsWith('!stats')) {
+            if (messageText === '!stats') {
                 await handleStats(sock, message)
                 return
             }
 
-            if (messageText.startsWith('!clean')) {
+            if (messageText === '!clean') {
                 await handleClean(sock, message)
                 return
             }
 
-            if (messageText.startsWith('!check')) {
-                await handleCheckContacts(sock, message)
+            if (messageText === '!clear') {
+                await handleClearAllContacts(sock, message)
+                return
+            }
+
+            if (messageText === '!clear confirm') {
+                await handleClearConfirm(sock, message)
+                return
+            }
+
+            if (messageText === '!validate') {
+                await handleValidateContacts(sock, message)
+                return
+            }
+
+            if (messageText === '!cleaninvalid') {
+                await handleCleanInvalidContacts(sock, message)
                 return
             }
 
             // === КОМАНДЫ РАССЫЛКИ ===
 
+            if (messageText === '!send') {
+                await handleSmartSending(sock, message, config.massMessageText)
+                return
+            }
+
+            if (messageText === '!send1') {
+                await handleSmartSending(sock, message, config.massMessageText1)
+                return
+            }
+
+            if (messageText === '!send2') {
+                await handleSmartSending(sock, message, config.massMessageText2)
+                return
+            }
+
+            if (messageText === '!send3') {
+                await handleSmartSending(sock, message, config.massMessageText3)
+                return
+            }
+
             if (messageText.startsWith('!send ')) {
-                await handleSmartSending(sock, message, messageText)
+                await handleSmartSending(sock, message, messageText.replace('!send ', ''))
                 return
             }
 
             if (messageText.startsWith('!batch ')) {
                 await handleBatchSending(sock, message, messageText)
+                return
+            }
+
+            if (messageText === '!test') {
+                await handleTestPersonalization(sock, message)
+                return
+            }
+
+            // === АВТОМАТИЧЕСКАЯ РАССЫЛКА ===
+
+            if (messageText === '!autostart') {
+                await handleSimpleAutoSending(sock, message)
+                return
+            }
+
+            if (messageText === '!autostop') {
+                await handleStopAutoSending(sock, message)
+                return
+            }
+
+            if (messageText === '!autostatus') {
+                await handleAutoStatus(sock, message)
                 return
             }
 
@@ -177,7 +232,7 @@ const start = async () => {
                 return
             }
 
-            if (messageText.startsWith('!help')) {
+            if (messageText === '!help') {
                 await handleAdvancedHelp(sock, message)
                 return
             }
@@ -189,6 +244,235 @@ const start = async () => {
 }
 
 // === ОБРАБОТЧИКИ КОМАНД ===
+
+// Функция для публичной справки (для других пользователей)
+const handlePublicHelp = async (sock: any, message: any) => {
+    const helpText = `
+🤖 WhatsApp Bot
+
+ℹ️ Этот бот предназначен только для рассылки.
+Автоматические ответы отключены.
+
+Если у вас есть вопросы, свяжитесь с администратором напрямую.
+    `
+    await sendReply(sock, message, helpText)
+}
+
+            if (messageText === '!texts') {
+                await handleShowTexts(sock, message)
+                return
+            }
+
+// Показать готовые тексты с примером персонализации
+const handleShowTexts = async (sock: any, message: any) => {
+const handleTestPersonalization = async (sock: any, message: any) => {
+    const contacts = contactManager.getAllContacts().slice(0, 3) // Берем первые 3 контакта
+    
+    if (contacts.length === 0) {
+        await sendReply(sock, message, 'Нет контактов для тестирования персонализации')
+        return
+    }
+
+    let testResults = '🧪 ТЕСТ ПЕРСОНАЛИЗАЦИИ:\n\n'
+    
+    for (const contact of contacts) {
+        let personalizedMessage = config.massMessageText
+        
+        if (contact.name) {
+            personalizedMessage = personalizedMessage.replace(/{НазваниеОрганизации}/g, contact.name)
+            personalizedMessage = personalizedMessage.replace(/{название}/g, contact.name)
+            personalizedMessage = personalizedMessage.replace(/{организация}/g, contact.name)
+        } else {
+            personalizedMessage = personalizedMessage.replace(/{НазваниеОрганизации}/g, 'уважаемая компания')
+            personalizedMessage = personalizedMessage.replace(/{название}/g, 'уважаемая компания')
+            personalizedMessage = personalizedMessage.replace(/{организация}/g, 'уважаемая компания')
+        }
+        
+        testResults += `📱 ${contact.phone} → ${contact.name || 'без названия'}\n`
+        testResults += `📝 Текст:\n${personalizedMessage}\n\n---\n\n`
+    }
+    
+    await sendReply(sock, message, testResults)
+}
+    const textsInfo = `
+📝 ПЕРСОНАЛИЗИРОВАННЫЕ ТЕКСТЫ РАССЫЛКИ:
+
+🤖 ОСНОВНОЙ ТЕКСТ (!send):
+${config.massMessageText}
+
+💼 ТЕКСТ 1 (!send1):
+${config.massMessageText1}
+
+🔥 ТЕКСТ 2 (!send2):
+${config.massMessageText2}
+
+⚡ ТЕКСТ 3 (!send3):
+${config.massMessageText3}
+
+📋 ПРИМЕР ПЕРСОНАЛИЗАЦИИ:
+Для контакта "+77019321613,Астана Юрист"
+Текст "{НазваниеОрганизации}" → "Астана Юрист"
+
+📤 КОМАНДЫ:
+!send - Рассылка основным текстом
+!send1, !send2, !send3 - Рассылка готовыми текстами
+!send СВОЙ ТЕКСТ - Рассылка кастомным текстом
+
+✏️ В тексте используйте {НазваниеОрганизации} для автоподстановки
+    `
+    await sendReply(sock, message, textsInfo)
+}
+
+// Простая автоматическая рассылка с настройками из .env
+const handleSimpleAutoSending = async (sock: any, message: any) => {
+    if (autoSendingActive) {
+        await sendReply(sock, message, '⚠️ Автоматическая рассылка уже запущена! Используйте !autostop для остановки.')
+        return
+    }
+
+    // Все настройки берем из .env
+    const batchSize = parseInt(process.env.MAX_NUMBERS_PER_BATCH || '10')
+    const intervalMs = parseInt(process.env.BATCH_COOLDOWN || '900000') // 15 минут по умолчанию
+    const intervalMinutes = intervalMs / 1000 / 60
+    const messageText = config.massMessageText
+
+    const allContacts = contactManager.getContactsForSending(1000) // Получаем все контакты
+    
+    if (allContacts.length === 0) {
+        await sendReply(sock, message, 'Нет контактов для рассылки')
+        return
+    }
+
+    // Разбиваем на батчи
+    const batches = []
+    for (let i = 0; i < allContacts.length; i += batchSize) {
+        batches.push(allContacts.slice(i, i + batchSize))
+    }
+
+    await sendReply(sock, message, `
+🚀 ЗАПУСК АВТОМАТИЧЕСКОЙ РАССЫЛКИ
+
+📊 Параметры из .env:
+• Всего контактов: ${allContacts.length}
+• Размер батча: ${batchSize}
+• Интервал: ${intervalMinutes} минут
+• Всего батчей: ${batches.length}
+• Общее время: ~${Math.ceil(batches.length * intervalMinutes / 60)} часов
+
+📤 Текст сообщения:
+${messageText}
+
+⏰ Первый батч отправляется через 10 секунд...
+Для остановки: !autostop
+Статус: !autostatus
+    `)
+
+    autoSendingActive = true
+    let currentBatch = 0
+
+    // Функция отправки одного батча
+    const sendNextBatch = async () => {
+        if (!autoSendingActive || currentBatch >= batches.length) {
+            autoSendingActive = false
+            if (autoSendingInterval) {
+                clearInterval(autoSendingInterval)
+                autoSendingInterval = null
+            }
+            
+            await sendReply(sock, message, `
+🎉 АВТОМАТИЧЕСКАЯ РАССЫЛКА ЗАВЕРШЕНА!
+
+📊 Итоговая статистика:
+• Обработано батчей: ${currentBatch}/${batches.length}
+• Всего контактов: ${allContacts.length}
+
+Подробную статистику: !stats
+            `)
+            return
+        }
+
+        const batch = batches[currentBatch]
+        cli.print(`[AUTO SENDING] Отправка батча ${currentBatch + 1}/${batches.length} (${batch.length} контактов)`)
+        
+        await sendReply(sock, message, `📤 Отправка батча ${currentBatch + 1}/${batches.length} (${batch.length} контактов)...`)
+        
+        try {
+            await sendSmartBatch(sock, message, batch, messageText)
+            currentBatch++
+            
+            if (currentBatch < batches.length) {
+                await sendReply(sock, message, `✅ Батч ${currentBatch}/${batches.length} завершен. Следующий через ${intervalMinutes} минут.`)
+            }
+        } catch (error: any) {
+            cli.printError(`[AUTO SENDING] Ошибка в батче ${currentBatch + 1}: ${error.message}`)
+            await sendReply(sock, message, `❌ Ошибка в батче ${currentBatch + 1}: ${error.message}`)
+        }
+    }
+
+    // Запускаем первый батч через 10 секунд
+    setTimeout(async () => {
+        await sendNextBatch()
+        
+        // Запускаем интервал для остальных батчей
+        if (batches.length > 1) {
+            autoSendingInterval = setInterval(sendNextBatch, intervalMs)
+        }
+    }, 10000)
+}
+
+// Остановка автоматической рассылки
+const handleStopAutoSending = async (sock: any, message: any) => {
+    if (!autoSendingActive) {
+        await sendReply(sock, message, 'ℹ️ Автоматическая рассылка не активна')
+        return
+    }
+
+    autoSendingActive = false
+    if (autoSendingInterval) {
+        clearInterval(autoSendingInterval)
+        autoSendingInterval = null
+    }
+
+    await sendReply(sock, message, '🛑 Автоматическая рассылка ОСТАНОВЛЕНА')
+}
+
+// Статус автоматической рассылки
+const handleAutoStatus = async (sock: any, message: any) => {
+    const stats = contactManager.getStats()
+    const batchSize = parseInt(process.env.MAX_NUMBERS_PER_BATCH || '10')
+    const intervalMinutes = parseInt(process.env.BATCH_COOLDOWN || '900000') / 1000 / 60
+    
+    const statusText = `
+📊 СТАТУС АВТОМАТИЧЕСКОЙ РАССЫЛКИ
+
+🤖 Статус: ${autoSendingActive ? '🟢 АКТИВНА' : '🔴 НЕАКТИВНА'}
+
+⚙️ НАСТРОЙКИ ИЗ .ENV:
+• Размер батча: ${batchSize}
+• Интервал: ${intervalMinutes} минут
+• Дневной лимит: ${stats.limits.DAILY_MESSAGE_LIMIT}
+
+📱 КОНТАКТЫ:
+• Всего: ${stats.contacts.total}
+• Активных: ${stats.contacts.active}
+• В ожидании: ${stats.contacts.pending}
+• Заблокированных: ${stats.contacts.blocked}
+
+📤 СЕГОДНЯ:
+• Отправлено: ${stats.sending.sentToday}/${stats.sending.dailyLimit}
+• Всего отправлено: ${stats.sending.totalSent}
+
+📝 ТЕКСТ РАССЫЛКИ:
+${config.massMessageText}
+
+🎯 КОМАНДЫ:
+• !autostart - Запустить автоматическую рассылку
+• !autostop - Остановить рассылку
+• !autostatus - Этот статус
+    `
+    
+    await sendReply(sock, message, statusText)
+}
 
 const handleAddContact = async (sock: any, message: any, text: string) => {
     const args = text.replace('!add', '').trim().split(',')
@@ -312,6 +596,22 @@ const handleClean = async (sock: any, message: any) => {
     await sendReply(sock, message, `🧹 Удалено ${removed} заблокированных контактов`)
 }
 
+const handleClearAllContacts = async (sock: any, message: any) => {
+    const totalContacts = contactManager.getAllContacts().length
+    
+    if (totalContacts === 0) {
+        await sendReply(sock, message, 'ℹ️ Список контактов уже пуст')
+        return
+    }
+
+    await sendReply(sock, message, `⚠️ Вы уверены, что хотите удалить ВСЕ ${totalContacts} контактов?\n\nОтправьте "!clear confirm" для подтверждения`)
+}
+
+const handleClearConfirm = async (sock: any, message: any) => {
+    const cleared = contactManager.clearAllContacts()
+    await sendReply(sock, message, `🗑️ Удалено ${cleared} контактов. Список полностью очищен!`)
+}
+
 const handleCheckContacts = async (sock: any, message: any) => {
     const contacts = contactManager.getContactsForSending(10) // Проверяем первые 10
     
@@ -320,7 +620,7 @@ const handleCheckContacts = async (sock: any, message: any) => {
         return
     }
 
-    await sendReply(sock, message, `🔍 Проверяю ${contacts.length} контактов...`)
+    await sendReply(sock, message, `🔍 Проверяю ${contacts.length} контактов в WhatsApp...`)
     
     let valid = 0
     let invalid = 0
@@ -331,34 +631,122 @@ const handleCheckContacts = async (sock: any, message: any) => {
             const [result] = await sock.onWhatsApp(contact.phone.replace('+', ''))
             
             if (result && result.exists) {
-                results.push(`✅ ${contact.phone}${contact.name ? ` (${contact.name})` : ''}`)
+                results.push(`✅ ${contact.phone}${contact.name ? ` (${contact.name})` : ''} - активен`)
                 valid++
                 contactManager.markMessageSent(contact.phone, true) // Помечаем как активный
             } else {
-                results.push(`❌ ${contact.phone} - не найден`)
+                results.push(`❌ ${contact.phone}${contact.name ? ` (${contact.name})` : ''} - не найден в WhatsApp`)
                 invalid++
+                // Помечаем как заблокированный
+                contactManager.markMessageSent(contact.phone, false)
             }
             
             await new Promise(resolve => setTimeout(resolve, 1000))
             
         } catch (error: any) {
-            results.push(`⚠️ ${contact.phone} - ошибка`)
+            results.push(`⚠️ ${contact.phone} - ошибка проверки`)
             invalid++
         }
     }
 
-    const report = `📋 Результат проверки:\n${results.join('\n')}\n\n📊 Итого:\n✅ Активных: ${valid}\n❌ Неактивных: ${invalid}`
+    const report = `📋 Результат проверки WhatsApp:\n${results.join('\n')}\n\n📊 Итого:\n✅ Активных: ${valid}\n❌ Неактивных: ${invalid}`
     await sendReply(sock, message, report)
 }
 
-const handleSmartSending = async (sock: any, message: any, text: string) => {
-    const messageToSend = text.replace('!send', '').trim()
+const handleValidateContacts = async (sock: any, message: any) => {
+    const allContacts = contactManager.getAllContacts()
     
-    if (!messageToSend) {
-        await sendReply(sock, message, 'Укажите текст сообщения\nПример: !send Привет! Предлагаю свои услуги')
+    if (allContacts.length === 0) {
+        await sendReply(sock, message, 'Нет контактов для валидации')
         return
     }
 
+    await sendReply(sock, message, `🔍 Валидирую ${allContacts.length} контактов...`)
+    
+    let validNumbers = 0
+    let invalidNumbers = 0
+    let whatsappChecked = 0
+    let whatsappValid = 0
+    
+    const maxWhatsAppChecks = 20 // Ограничиваем проверки WhatsApp
+    
+    for (let i = 0; i < allContacts.length; i++) {
+        const contact = allContacts[i]
+        
+        // Проверяем формат номера
+        if (!contactManager.isValidMobileNumber(contact.phone)) {
+            invalidNumbers++
+            contactManager.markContactAsInvalid(contact.phone)
+            continue
+        }
+        
+        validNumbers++
+        
+        // Проверяем в WhatsApp (ограниченно)
+        if (whatsappChecked < maxWhatsAppChecks) {
+            try {
+                const isInWhatsApp = await contactManager.validateWhatsAppNumber(contact.phone, sock)
+                if (isInWhatsApp) {
+                    whatsappValid++
+                    contactManager.markMessageSent(contact.phone, true)
+                } else {
+                    contactManager.markMessageSent(contact.phone, false)
+                }
+                whatsappChecked++
+                
+                // Пауза между проверками
+                await new Promise(resolve => setTimeout(resolve, 1000))
+                
+                // Показываем прогресс
+                if (whatsappChecked % 5 === 0) {
+                    await sendReply(sock, message, `⏳ Проверено в WhatsApp: ${whatsappChecked}/${maxWhatsAppChecks}`)
+                }
+            } catch (error) {
+                // Игнорируем ошибки проверки WhatsApp
+            }
+        }
+    }
+
+    const report = `
+📊 РЕЗУЛЬТАТ ВАЛИДАЦИИ:
+
+📱 ФОРМАТ НОМЕРОВ:
+✅ Валидных: ${validNumbers}
+❌ Невалидных: ${invalidNumbers}
+
+💬 ПРОВЕРКА WHATSAPP (${whatsappChecked} из ${validNumbers}):
+✅ Активных: ${whatsappValid}
+❌ Неактивных: ${whatsappChecked - whatsappValid}
+
+🎯 РЕКОМЕНДАЦИИ:
+• Используйте !cleaninvalid для удаления невалидных
+• Используйте !clean для удаления заблокированных
+• Проверьте остальные номера командой !check
+    `
+    
+    await sendReply(sock, message, report)
+}
+
+const handleCleanInvalidContacts = async (sock: any, message: any) => {
+    const beforeCount = contactManager.getAllContacts().length
+    const removed = contactManager.cleanInvalidContacts()
+    const afterCount = contactManager.getAllContacts().length
+    
+    await sendReply(sock, message, `
+🧹 ОЧИСТКА НЕВАЛИДНЫХ НОМЕРОВ:
+
+❌ Удалено невалидных: ${removed}
+📱 Было контактов: ${beforeCount}
+📱 Стало контактов: ${afterCount}
+
+Невалидные номера включают:
+• Городские номера
+• Короткие номера
+• Номера неправильного формата
+    `)
+}
+
+const handleSmartSending = async (sock: any, message: any, messageToSend: string) => {
     // Автоматический умный батч
     const contacts = contactManager.getContactsForSending()
     
@@ -402,9 +790,9 @@ const handleBatchSending = async (sock: any, message: any, text: string) => {
     await sendSmartBatch(sock, message, contacts, messageToSend)
 }
 
-// Умная отправка батча
-const sendSmartBatch = async (sock: any, message: any, contacts: any[], messageText: string) => {
-    await sendReply(sock, message, `🚀 Начинаю умную рассылку по ${contacts.length} контактам...`)
+// Умная отправка батча с персонализацией
+const sendSmartBatch = async (sock: any, message: any, contacts: any[], messageTemplate: string) => {
+    await sendReply(sock, message, `🚀 Начинаю персонализированную рассылку по ${contacts.length} контактам...`)
 
     let success = 0
     let errors = 0
@@ -422,10 +810,19 @@ const sendSmartBatch = async (sock: any, message: any, contacts: any[], messageT
                 continue
             }
 
-            // Персонализируем сообщение
-            let personalizedMessage = messageText
+            // Персонализируем сообщение с названием организации
+            let personalizedMessage = messageTemplate
+            
             if (contact.name) {
-                personalizedMessage = `${contact.name}, ${messageText}`
+                // Заменяем плейсхолдер {НазваниеОрганизации} на реальное название
+                personalizedMessage = personalizedMessage.replace(/{НазваниеОрганизации}/g, contact.name)
+                personalizedMessage = personalizedMessage.replace(/{название}/g, contact.name)
+                personalizedMessage = personalizedMessage.replace(/{организация}/g, contact.name)
+            } else {
+                // Если нет названия, используем общее обращение
+                personalizedMessage = personalizedMessage.replace(/{НазваниеОрганизации}/g, 'уважаемая компания')
+                personalizedMessage = personalizedMessage.replace(/{название}/g, 'уважаемая компания')
+                personalizedMessage = personalizedMessage.replace(/{организация}/g, 'уважаемая компания')
             }
 
             // Отправляем сообщение
@@ -436,7 +833,7 @@ const sendSmartBatch = async (sock: any, message: any, contacts: any[], messageT
             contactManager.markMessageSent(contact.phone, true)
             success++
             
-            cli.print(`✅ Отправлено: ${contact.phone}${contact.name ? ` (${contact.name})` : ''}`)
+            cli.print(`✅ Отправлено: ${contact.phone} → ${contact.name || 'без названия'}`)
 
             // Прогресс для длинных рассылок
             if (contacts.length > 5 && (i + 1) % 5 === 0) {
@@ -458,7 +855,7 @@ const sendSmartBatch = async (sock: any, message: any, contacts: any[], messageT
     // Финальный отчет
     const stats = contactManager.getStats()
     const report = `
-🎉 Рассылка завершена!
+🎉 Персонализированная рассылка завершена!
 
 📊 РЕЗУЛЬТАТ:
 ✅ Успешно: ${success}
@@ -468,8 +865,6 @@ const sendSmartBatch = async (sock: any, message: any, contacts: any[], messageT
 📈 СТАТИСТИКА ДНЯ:
 📤 Отправлено сегодня: ${stats.sending.sentToday}/${stats.sending.dailyLimit}
 🔄 Всего отправлено: ${stats.sending.totalSent}
-
-⏰ Следующий батч доступен через: ${Math.ceil(stats.limits.BATCH_COOLDOWN/1000/60)} минут
     `
     
     await sendReply(sock, message, report)
@@ -491,54 +886,57 @@ const handleAI = async (sock: any, message: any, prompt: string) => {
 
 const handleAdvancedHelp = async (sock: any, message: any) => {
     const helpText = `
-🤖 WhatsApp Продвинутый AI Бот
+🤖 WhatsApp Продвинутый Бот для Рассылки
 
 📱 УПРАВЛЕНИЕ КОНТАКТАМИ:
 !add +номер[,имя] - Добавить контакт
 !import путь/файл.txt - Импорт из файла
 !scan - Сканировать папку uploads/
 !list - Показать контакты
+!validate - Валидировать все номера
 !check - Проверить номера в WhatsApp
 !clean - Удалить заблокированные
+!cleaninvalid - Удалить невалидные номера
+!clear - Очистить ВСЕ контакты
 !stats - Детальная статистика
 
-📤 УМНАЯ РАССЫЛКА:
-!send текст - Автоматический батч
-!batch 15 текст - Конкретный размер батча
+📤 БЫСТРАЯ РАССЫЛКА (готовые тексты):
+!send - Основной текст рассылки
+!send1 - Альтернативный текст 1  
+!send2 - Альтернативный текст 2
+!send3 - Альтернативный текст 3
+!texts - Показать все готовые тексты
+!test - Тестировать персонализацию
 
-🤖 AI АССИСТЕНТ:
-!ai вопрос - Общение с Gemini
-!gpt вопрос - То же самое
+📤 КАСТОМНАЯ РАССЫЛКА:
+!send СВОЙ ТЕКСТ - Рассылка кастомным текстом
+!batch 15 ТЕКСТ - Конкретный размер батча
+
+🤖 АВТОМАТИЧЕСКАЯ РАССЫЛКА:
+!autostart - Запустить автоматическую рассылку (настройки из .env)
+!autostop - Остановить автоматическую рассылку
+!autostatus - Статус и настройки рассылки
+
+🤖 AI ТОЛЬКО ДЛЯ ВЛАДЕЛЬЦА:
+!ai вопрос - Общение с Gemini (только вы)
+
+⚠️ ВАЖНО:
+• Автоответы ИИ ОТКЛЮЧЕНЫ
+• Бот НЕ отвечает на обычные сообщения
+• Только рассылка и управление контактами
+• AI доступен только владельцу
 
 📋 ПРИМЕРЫ:
-!add +77012345678,Иван Петров
-!import uploads/clients.txt
 !scan
-!batch 10 🔥 Скидка 50%! Только сегодня!
-
-📁 ФОРМАТЫ ФАЙЛОВ:
-+77012345678
-+77012345678,Имя Клиента
-77012345678;Имя Фамилия
+!autostart - запустить автоматическую рассылку
+!autostatus - проверить статус
+!autostop - остановить рассылку
 
 ⚡ ЛИМИТЫ БЕЗОПАСНОСТИ:
-• Максимум 20 номеров за раз
+• Максимум 10 номеров за раз
 • 100 сообщений в день  
 • Пауза 15 минут между батчами
 • Случайные задержки 5-10 сек
-    `
-    await sendReply(sock, message, helpText)
-}
-
-const handleHelp = async (sock: any, message: any) => {
-    const helpText = `
-🤖 WhatsApp AI Bot
-
-🤖 AI КОМАНДЫ:
-!ai вопрос - Общение с ИИ
-!help - Эта справка
-
-Для доступа к функциям рассылки отправьте команды себе в избранное.
     `
     await sendReply(sock, message, helpText)
 }

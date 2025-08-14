@@ -27,11 +27,14 @@ interface IConfig {
 	// Groupchats
 	groupchatsEnabled: boolean;
 
-	// Mass messaging (новая функция)
-	massMessagingEnabled: boolean;
-	targetPhoneNumbers: string[];
-	messageTemplate: string;
-	messagingDelay: number; // задержка между сообщениями в мс
+	// AI Auto responses
+	aiAutoResponsesEnabled: boolean;
+
+	// Mass messaging texts
+	massMessageText: string;
+	massMessageText1: string;
+	massMessageText2: string;
+	massMessageText3: string;
 
 	// Voice transcription & Text-to-Speech
 	speechServerUrl: string;
@@ -55,18 +58,21 @@ export const config: IConfig = {
 	// Prefix
 	prefixEnabled: getEnvBooleanWithDefault("PREFIX_ENABLED", true),
 	prefixSkippedForMe: getEnvBooleanWithDefault("PREFIX_SKIPPED_FOR_ME", true),
-	gptPrefix: process.env.GPT_PREFIX || "!ai", // Изменили на !ai
+	gptPrefix: process.env.GPT_PREFIX || "!ai",
 	resetPrefix: process.env.RESET_PREFIX || "!reset",
 	aiConfigPrefix: process.env.AI_CONFIG_PREFIX || "!config",
 
 	// Groupchats
 	groupchatsEnabled: getEnvBooleanWithDefault("GROUPCHATS_ENABLED", false),
 
-	// Mass messaging
-	massMessagingEnabled: getEnvBooleanWithDefault("MASS_MESSAGING_ENABLED", false),
-	targetPhoneNumbers: process.env.TARGET_PHONE_NUMBERS?.split(",") || [],
-	messageTemplate: process.env.MESSAGE_TEMPLATE || "Привет! Предлагаю свои услуги...",
-	messagingDelay: parseInt(process.env.MESSAGING_DELAY || "5000"), // 5 секунд по умолчанию
+	// AI Auto responses
+	aiAutoResponsesEnabled: getEnvBooleanWithDefault("AI_AUTO_RESPONSES_ENABLED", false),
+
+	// Mass messaging texts
+	massMessageText: process.env.MASS_MESSAGE_TEXT || "🤖 Создаю ботов для автоматизации бизнеса! WhatsApp, Telegram, интеграции с CRM. Цены от 50000₸. Бесплатная консультация!",
+	massMessageText1: process.env.MASS_MESSAGE_TEXT_1 || "💼 Привет! Помогаю предпринимателям автоматизировать рутину через ботов. Увеличиваем продажи на 40%. Интересно обсудить?",
+	massMessageText2: process.env.MASS_MESSAGE_TEXT_2 || "🔥 АКЦИЯ! Скидка 30% на создание ботов! Только до конца месяца. Подробности в ЛС.",
+	massMessageText3: process.env.MASS_MESSAGE_TEXT_3 || "⚡ Автоматизация бизнеса под ключ! Боты, чат-боты, интеграции. Экономим время и увеличиваем прибыль!",
 
 	// Speech API
 	speechServerUrl: process.env.SPEECH_API_URL || "https://speech-service.verlekar.com",
