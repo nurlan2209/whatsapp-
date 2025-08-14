@@ -1,11 +1,902 @@
 [
   {
-    "phone": "+77758524891",
-    "name": "SpaceX",
+    "phone": "+77019321613",
+    "name": "Астана Юрист",
     "source": "part_1.txt",
-    "addedAt": "2025-08-14T18:53:18.142Z",
+    "addedAt": "2025-08-14T19:12:57.579Z",
+    "status": "active",
+    "sentCount": 2,
+    "lastSent": "2025-08-14T19:19:03.157Z"
+  },
+  {
+    "phone": "+77078936620",
+    "name": "F360",
+    "source": "part_1.txt",
+    "addedAt": "2025-08-14T19:12:57.579Z",
+    "status": "active",
+    "sentCount": 2,
+    "lastSent": "2025-08-14T19:19:13.701Z"
+  },
+  {
+    "phone": "+77082348969",
+    "name": "TN Union Partners",
+    "source": "part_1.txt",
+    "addedAt": "2025-08-14T19:12:57.580Z",
+    "status": "active",
+    "sentCount": 2,
+    "lastSent": "2025-08-14T19:19:20.557Z"
+  },
+  {
+    "phone": "+77001133050",
+    "name": "Адвокат Кенжебаев Е.А.",
+    "source": "part_1.txt",
+    "addedAt": "2025-08-14T19:12:57.580Z",
+    "status": "active",
+    "sentCount": 2,
+    "lastSent": "2025-08-14T19:19:27.216Z"
+  },
+  {
+    "phone": "+77710508184",
+    "name": "Responsa",
+    "source": "part_1.txt",
+    "addedAt": "2025-08-14T19:12:57.580Z",
+    "status": "active",
+    "sentCount": 2,
+    "lastSent": "2025-08-14T19:19:34.586Z"
+  },
+  {
+    "phone": "+77756468180",
+    "name": "Адвокат-медиатор Танабаева М.А.",
+    "source": "part_1.txt",
+    "addedAt": "2025-08-14T19:12:57.580Z",
+    "status": "active",
+    "sentCount": 2,
+    "lastSent": "2025-08-14T19:19:44.212Z"
+  },
+  {
+    "phone": "+77479610656",
+    "name": "Golden Lex",
+    "source": "part_1.txt",
+    "addedAt": "2025-08-14T19:12:57.580Z",
+    "status": "active",
+    "sentCount": 2,
+    "lastSent": "2025-08-14T19:19:50.272Z"
+  },
+  {
+    "phone": "+77471319502",
+    "name": "Адвокат Абдрахманов К.М.",
+    "source": "part_1.txt",
+    "addedAt": "2025-08-14T19:12:57.580Z",
+    "status": "active",
+    "sentCount": 2,
+    "lastSent": "2025-08-14T19:19:56.292Z"
+  },
+  {
+    "phone": "+77777661616",
+    "name": "Лаборатория Права",
+    "source": "part_1.txt",
+    "addedAt": "2025-08-14T19:12:57.581Z",
+    "status": "active",
+    "sentCount": 2,
+    "lastSent": "2025-08-14T19:20:02.959Z"
+  },
+  {
+    "phone": "+77172725167",
+    "name": "Вита Либерта",
+    "source": "part_1.txt",
+    "addedAt": "2025-08-14T19:12:57.581Z",
+    "status": "pending",
+    "sentCount": 2,
+    "lastSent": "2025-08-14T19:20:10.311Z"
+  },
+  {
+    "phone": "+77780473986",
+    "name": "Адвокат Исенов А. Н.",
+    "source": "part_1.txt",
+    "addedAt": "2025-08-14T19:12:57.581Z",
     "status": "active",
     "sentCount": 1,
-    "lastSent": "2025-08-14T18:53:35.460Z"
+    "lastSent": "2025-08-14T19:14:02.851Z"
+  },
+  {
+    "phone": "+77020948140",
+    "name": "Юрсервис-Kz",
+    "source": "part_1.txt",
+    "addedAt": "2025-08-14T19:12:57.581Z",
+    "status": "active",
+    "sentCount": 1,
+    "lastSent": "2025-08-14T19:14:05.173Z"
+  },
+  {
+    "phone": "+77476613252",
+    "name": "Центр правовой помощи Zan",
+    "source": "part_1.txt",
+    "addedAt": "2025-08-14T19:12:57.581Z",
+    "status": "active",
+    "sentCount": 1,
+    "lastSent": "2025-08-14T19:14:07.533Z"
+  },
+  {
+    "phone": "+77753531074",
+    "name": "Sovpravo.kz",
+    "source": "part_1.txt",
+    "addedAt": "2025-08-14T19:12:57.581Z",
+    "status": "active",
+    "sentCount": 1,
+    "lastSent": "2025-08-14T19:14:09.883Z"
+  },
+  {
+    "phone": "+77017794848",
+    "name": "Адвокат Чубарева Н.Н.",
+    "source": "part_1.txt",
+    "addedAt": "2025-08-14T19:12:57.581Z",
+    "status": "active",
+    "sentCount": 1,
+    "lastSent": "2025-08-14T19:14:12.142Z"
+  },
+  {
+    "phone": "+77068188008",
+    "name": "Regnum Legis",
+    "source": "part_1.txt",
+    "addedAt": "2025-08-14T19:12:57.582Z",
+    "status": "active",
+    "sentCount": 1,
+    "lastSent": "2025-08-14T19:14:14.412Z"
+  },
+  {
+    "phone": "+77017133173",
+    "name": "Адвокат Тулегенов А.К.",
+    "source": "part_1.txt",
+    "addedAt": "2025-08-14T19:12:57.582Z",
+    "status": "active",
+    "sentCount": 1,
+    "lastSent": "2025-08-14T19:14:16.685Z"
+  },
+  {
+    "phone": "+77018703831",
+    "name": "Адвокат Буржумбаев Р.С.",
+    "source": "part_1.txt",
+    "addedAt": "2025-08-14T19:12:57.582Z",
+    "status": "active",
+    "sentCount": 1,
+    "lastSent": "2025-08-14T19:14:19.107Z"
+  },
+  {
+    "phone": "+77773759917",
+    "name": "Адвокат Исмагулова А.Т.",
+    "source": "part_1.txt",
+    "addedAt": "2025-08-14T19:12:57.582Z",
+    "status": "active",
+    "sentCount": 1,
+    "lastSent": "2025-08-14T19:14:21.397Z"
+  },
+  {
+    "phone": "+77172651687",
+    "name": "Адвокатский кабинет Сорокина О.Ю.",
+    "source": "part_1.txt",
+    "addedAt": "2025-08-14T19:12:57.582Z",
+    "status": "pending",
+    "sentCount": 1,
+    "lastSent": "2025-08-14T19:14:23.656Z"
+  },
+  {
+    "phone": "+77710401010",
+    "name": "AUTO-Лига",
+    "source": "part_1.txt",
+    "addedAt": "2025-08-14T19:12:57.583Z",
+    "status": "active",
+    "sentCount": 1,
+    "lastSent": "2025-08-14T19:14:26.186Z"
+  },
+  {
+    "phone": "+77755479996",
+    "name": "Адвокат Байхадулин Д.Б.",
+    "source": "part_1.txt",
+    "addedAt": "2025-08-14T19:12:57.583Z",
+    "status": "active",
+    "sentCount": 1,
+    "lastSent": "2025-08-14T19:14:28.459Z"
+  },
+  {
+    "phone": "+77002707485",
+    "name": "Advocate Group",
+    "source": "part_1.txt",
+    "addedAt": "2025-08-14T19:12:57.583Z",
+    "status": "active",
+    "sentCount": 1,
+    "lastSent": "2025-08-14T19:14:30.732Z"
+  },
+  {
+    "phone": "+77079736825",
+    "name": "Адвокат Смагулов С.Д.",
+    "source": "part_1.txt",
+    "addedAt": "2025-08-14T19:12:57.583Z",
+    "status": "active",
+    "sentCount": 1,
+    "lastSent": "2025-08-14T19:14:33.021Z"
+  },
+  {
+    "phone": "+77711698921",
+    "name": "Адвокат-медиатор Габдыбеков Н.А",
+    "source": "part_1.txt",
+    "addedAt": "2025-08-14T19:12:57.584Z",
+    "status": "active",
+    "sentCount": 1,
+    "lastSent": "2025-08-14T19:14:35.293Z"
+  },
+  {
+    "phone": "+77017294229",
+    "name": "Медиатор-юрист Нарбаева Г. К.",
+    "source": "part_1.txt",
+    "addedAt": "2025-08-14T19:12:57.584Z",
+    "status": "active",
+    "sentCount": 1,
+    "lastSent": "2025-08-14T19:14:37.556Z"
+  },
+  {
+    "phone": "+77787307277",
+    "name": "Адвокат Избасаров А.Ш.",
+    "source": "part_1.txt",
+    "addedAt": "2025-08-14T19:12:57.584Z",
+    "status": "active",
+    "sentCount": 1,
+    "lastSent": "2025-08-14T19:14:39.824Z"
+  },
+  {
+    "phone": "+77757964218",
+    "name": "Юристы Абеуова А.Е. и Ибраев А.Н.",
+    "source": "part_1.txt",
+    "addedAt": "2025-08-14T19:12:57.585Z",
+    "status": "active",
+    "sentCount": 1,
+    "lastSent": "2025-08-14T19:14:42.065Z"
+  },
+  {
+    "phone": "+77474693911",
+    "name": "Мугадаров и партнеры",
+    "source": "part_1.txt",
+    "addedAt": "2025-08-14T19:12:57.585Z",
+    "status": "active",
+    "sentCount": 1,
+    "lastSent": "2025-08-14T19:14:44.345Z"
+  },
+  {
+    "phone": "+77472531066",
+    "name": "Адвокат Степанов И.С.",
+    "source": "part_1.txt",
+    "addedAt": "2025-08-14T19:12:57.585Z",
+    "status": "active",
+    "sentCount": 1,
+    "lastSent": "2025-08-14T19:14:46.581Z"
+  },
+  {
+    "phone": "+77083408800",
+    "name": "Бина",
+    "source": "part_1.txt",
+    "addedAt": "2025-08-14T19:12:57.586Z",
+    "status": "active",
+    "sentCount": 1,
+    "lastSent": "2025-08-14T19:14:49.103Z"
+  },
+  {
+    "phone": "+77054231633",
+    "name": "Кабинет миграционных услуг",
+    "source": "part_1.txt",
+    "addedAt": "2025-08-14T19:12:57.586Z",
+    "status": "active",
+    "sentCount": 1,
+    "lastSent": "2025-08-14T19:14:51.363Z"
+  },
+  {
+    "phone": "+77051220999",
+    "name": "Адвокат Какимов Д. К.",
+    "source": "part_1.txt",
+    "addedAt": "2025-08-14T19:12:57.586Z",
+    "status": "active",
+    "sentCount": 1,
+    "lastSent": "2025-08-14T19:14:53.639Z"
+  },
+  {
+    "phone": "+77751122089",
+    "name": "Адвокат Тустаев Т.Ж.",
+    "source": "part_1.txt",
+    "addedAt": "2025-08-14T19:12:57.587Z",
+    "status": "active",
+    "sentCount": 1,
+    "lastSent": "2025-08-14T19:14:55.878Z"
+  },
+  {
+    "phone": "+77079520059",
+    "name": "Районы",
+    "source": "part_1.txt",
+    "addedAt": "2025-08-14T19:12:57.587Z",
+    "status": "active",
+    "sentCount": 1,
+    "lastSent": "2025-08-14T19:14:58.120Z"
+  },
+  {
+    "phone": "+77272980898",
+    "name": "KPMG",
+    "source": "part_1.txt",
+    "addedAt": "2025-08-14T19:12:57.588Z",
+    "status": "pending",
+    "sentCount": 1,
+    "lastSent": "2025-08-14T19:15:00.403Z"
+  },
+  {
+    "phone": "+77754703116",
+    "name": "Юрист рядом",
+    "source": "part_1.txt",
+    "addedAt": "2025-08-14T19:12:57.588Z",
+    "status": "active",
+    "sentCount": 1,
+    "lastSent": "2025-08-14T19:15:02.676Z"
+  },
+  {
+    "phone": "+77242908309",
+    "name": "Банкротство граждан",
+    "source": "part_1.txt",
+    "addedAt": "2025-08-14T19:12:57.589Z",
+    "status": "pending",
+    "sentCount": 1,
+    "lastSent": "2025-08-14T19:15:04.945Z"
+  },
+  {
+    "phone": "+77780189995",
+    "name": "Современная Защита",
+    "source": "part_1.txt",
+    "addedAt": "2025-08-14T19:12:57.589Z",
+    "status": "pending",
+    "sentCount": 1,
+    "lastSent": "2025-08-14T19:15:07.205Z"
+  },
+  {
+    "phone": "+77071135045",
+    "name": "Ernst&Partners",
+    "source": "part_1.txt",
+    "addedAt": "2025-08-14T19:12:57.589Z",
+    "status": "active",
+    "sentCount": 1,
+    "lastSent": "2025-08-14T19:15:09.485Z"
+  },
+  {
+    "phone": "+77006517596",
+    "name": "Garant Zakona",
+    "source": "part_1.txt",
+    "addedAt": "2025-08-14T19:12:57.589Z",
+    "status": "active",
+    "sentCount": 1,
+    "lastSent": "2025-08-14T19:15:11.997Z"
+  },
+  {
+    "phone": "+77056878425",
+    "name": "Fortune Partners",
+    "source": "part_1.txt",
+    "addedAt": "2025-08-14T19:12:57.591Z",
+    "status": "active",
+    "sentCount": 1,
+    "lastSent": "2025-08-14T19:15:14.264Z"
+  },
+  {
+    "phone": "+77717000104",
+    "name": "Шаг Вперёд inc.",
+    "source": "part_1.txt",
+    "addedAt": "2025-08-14T19:12:57.591Z",
+    "status": "pending",
+    "sentCount": 1,
+    "lastSent": "2025-08-14T19:15:16.539Z"
+  },
+  {
+    "phone": "+77018775431",
+    "name": "Komek Group Astana",
+    "source": "part_1.txt",
+    "addedAt": "2025-08-14T19:12:57.592Z",
+    "status": "active",
+    "sentCount": 1,
+    "lastSent": "2025-08-14T19:15:18.811Z"
+  },
+  {
+    "phone": "+77015752828",
+    "name": "Адилет",
+    "source": "part_1.txt",
+    "addedAt": "2025-08-14T19:12:57.592Z",
+    "status": "active",
+    "sentCount": 1,
+    "lastSent": "2025-08-14T19:15:21.075Z"
+  },
+  {
+    "phone": "+77172346523",
+    "name": "Центральная юридическая консультация Коллегии Адвокатов г. Астаны",
+    "source": "part_1.txt",
+    "addedAt": "2025-08-14T19:12:57.592Z",
+    "status": "pending",
+    "sentCount": 1,
+    "lastSent": "2025-08-14T19:15:23.351Z"
+  },
+  {
+    "phone": "+77710333525",
+    "name": "Альянс независимой судебной экспертизы и специализированных исследований",
+    "source": "part_1.txt",
+    "addedAt": "2025-08-14T19:12:57.592Z",
+    "status": "active",
+    "sentCount": 1,
+    "lastSent": "2025-08-14T19:15:25.591Z"
+  },
+  {
+    "phone": "+77018273022",
+    "name": "Negoden",
+    "source": "part_1.txt",
+    "addedAt": "2025-08-14T19:12:57.593Z",
+    "status": "active",
+    "sentCount": 1,
+    "lastSent": "2025-08-14T19:15:27.868Z"
+  },
+  {
+    "phone": "+77004456270",
+    "name": "Адвокат Джураев М.У.",
+    "source": "part_1.txt",
+    "addedAt": "2025-08-14T19:12:57.593Z",
+    "status": "active",
+    "sentCount": 1,
+    "lastSent": "2025-08-14T19:15:30.134Z"
+  },
+  {
+    "phone": "+77001460018",
+    "name": "Inlaw.Kz",
+    "source": "part_1.txt",
+    "addedAt": "2025-08-14T19:12:57.593Z",
+    "status": "pending",
+    "sentCount": 1,
+    "lastSent": "2025-08-14T19:15:32.398Z"
+  },
+  {
+    "phone": "+77764472764",
+    "name": "De Facto",
+    "source": "part_1.txt",
+    "addedAt": "2025-08-14T19:12:57.593Z",
+    "status": "active",
+    "sentCount": 1,
+    "lastSent": "2025-08-14T19:15:34.880Z"
+  },
+  {
+    "phone": "+77172919555",
+    "name": "Grata International",
+    "source": "part_1.txt",
+    "addedAt": "2025-08-14T19:12:57.594Z",
+    "status": "pending",
+    "sentCount": 1,
+    "lastSent": "2025-08-14T19:15:37.155Z"
+  },
+  {
+    "phone": "+77172286583",
+    "name": "Казэнергоэкспертиза",
+    "source": "part_1.txt",
+    "addedAt": "2025-08-14T19:12:57.594Z",
+    "status": "pending",
+    "sentCount": 1,
+    "lastSent": "2025-08-14T19:15:39.428Z"
+  },
+  {
+    "phone": "+77073848352",
+    "name": "Law Council Group",
+    "source": "part_1.txt",
+    "addedAt": "2025-08-14T19:12:57.594Z",
+    "status": "active",
+    "sentCount": 1,
+    "lastSent": "2025-08-14T19:15:41.670Z"
+  },
+  {
+    "phone": "+77010708800",
+    "name": "Центр правовой помощи должникам РК",
+    "source": "part_1.txt",
+    "addedAt": "2025-08-14T19:12:57.594Z",
+    "status": "pending",
+    "sentCount": 1,
+    "lastSent": "2025-08-14T19:15:43.946Z"
+  },
+  {
+    "phone": "+77475217227",
+    "name": "Адвокат Исабекова Д.Ж.",
+    "source": "part_1.txt",
+    "addedAt": "2025-08-14T19:12:57.595Z",
+    "status": "active",
+    "sentCount": 1,
+    "lastSent": "2025-08-14T19:15:46.219Z"
+  },
+  {
+    "phone": "+77172537755",
+    "name": "Даму Консалтинг",
+    "source": "part_1.txt",
+    "addedAt": "2025-08-14T19:12:57.595Z",
+    "status": "pending",
+    "sentCount": 1,
+    "lastSent": "2025-08-14T19:15:48.458Z"
+  },
+  {
+    "phone": "+77022704094",
+    "name": "РВП Казахстан",
+    "source": "part_1.txt",
+    "addedAt": "2025-08-14T19:12:57.595Z",
+    "status": "active",
+    "sentCount": 1,
+    "lastSent": "2025-08-14T19:15:50.719Z"
+  },
+  {
+    "phone": "+77011966051",
+    "name": "Медиатор Мулдагалиева А.Б.",
+    "source": "part_1.txt",
+    "addedAt": "2025-08-14T19:12:57.595Z",
+    "status": "active",
+    "sentCount": 1,
+    "lastSent": "2025-08-14T19:15:52.994Z"
+  },
+  {
+    "phone": "+77172574321",
+    "name": "Байтерек Премиум",
+    "source": "part_1.txt",
+    "addedAt": "2025-08-14T19:12:57.595Z",
+    "status": "pending",
+    "sentCount": 1,
+    "lastSent": "2025-08-14T19:15:55.258Z"
+  },
+  {
+    "phone": "+77008312222",
+    "name": "Arasha Group",
+    "source": "part_1.txt",
+    "addedAt": "2025-08-14T19:12:57.596Z",
+    "status": "pending",
+    "sentCount": 1,
+    "lastSent": "2025-08-14T19:15:57.789Z"
+  },
+  {
+    "phone": "+77015661417",
+    "name": "Veto",
+    "source": "part_1.txt",
+    "addedAt": "2025-08-14T19:12:57.596Z",
+    "status": "active",
+    "sentCount": 1,
+    "lastSent": "2025-08-14T19:16:00.075Z"
+  },
+  {
+    "phone": "+77478882767",
+    "name": "Юрист Батталов Р.М.",
+    "source": "part_1.txt",
+    "addedAt": "2025-08-14T19:12:57.596Z",
+    "status": "active",
+    "sentCount": 1,
+    "lastSent": "2025-08-14T19:16:02.334Z"
+  },
+  {
+    "phone": "+77784161465",
+    "name": "Заң Заңғары",
+    "source": "part_1.txt",
+    "addedAt": "2025-08-14T19:12:57.596Z",
+    "status": "active",
+    "sentCount": 1,
+    "lastSent": "2025-08-14T19:16:04.605Z"
+  },
+  {
+    "phone": "+77751166880",
+    "name": "Диктатура Закона",
+    "source": "part_1.txt",
+    "addedAt": "2025-08-14T19:12:57.597Z",
+    "status": "active",
+    "sentCount": 1,
+    "lastSent": "2025-08-14T19:16:06.874Z"
+  },
+  {
+    "phone": "+77016431665",
+    "name": "Адвокат Бектемиров Ж.",
+    "source": "part_1.txt",
+    "addedAt": "2025-08-14T19:12:57.597Z",
+    "status": "active",
+    "sentCount": 1,
+    "lastSent": "2025-08-14T19:16:09.148Z"
+  },
+  {
+    "phone": "+77172253033",
+    "name": "MG Partners",
+    "source": "part_1.txt",
+    "addedAt": "2025-08-14T19:12:57.598Z",
+    "status": "pending",
+    "sentCount": 1,
+    "lastSent": "2025-08-14T19:16:11.387Z"
+  },
+  {
+    "phone": "+77172953261",
+    "name": "Юридическая консультация Алматинского района",
+    "source": "part_1.txt",
+    "addedAt": "2025-08-14T19:12:57.598Z",
+    "status": "pending",
+    "sentCount": 1,
+    "lastSent": "2025-08-14T19:16:13.668Z"
+  },
+  {
+    "phone": "+77009782323",
+    "name": "NRG Uchet",
+    "source": "part_1.txt",
+    "addedAt": "2025-08-14T19:12:57.598Z",
+    "status": "active",
+    "sentCount": 1,
+    "lastSent": "2025-08-14T19:16:15.955Z"
+  },
+  {
+    "phone": "+77172904256",
+    "name": "Gestor SKT",
+    "source": "part_1.txt",
+    "addedAt": "2025-08-14T19:12:57.598Z",
+    "status": "pending",
+    "sentCount": 1,
+    "lastSent": "2025-08-14T19:16:18.191Z"
+  },
+  {
+    "phone": "+77759852160",
+    "name": "Офис адвокатов",
+    "source": "part_1.txt",
+    "addedAt": "2025-08-14T19:12:57.599Z",
+    "status": "active",
+    "sentCount": 1,
+    "lastSent": "2025-08-14T19:16:20.710Z"
+  },
+  {
+    "phone": "+77015147730",
+    "name": "Адвокат Бесембаев С.К.",
+    "source": "part_1.txt",
+    "addedAt": "2025-08-14T19:12:57.599Z",
+    "status": "active",
+    "sentCount": 1,
+    "lastSent": "2025-08-14T19:16:22.996Z"
+  },
+  {
+    "phone": "+77000000747",
+    "name": "Synergy Company",
+    "source": "part_1.txt",
+    "addedAt": "2025-08-14T19:12:57.599Z",
+    "status": "active",
+    "sentCount": 1,
+    "lastSent": "2025-08-14T19:16:25.260Z"
+  },
+  {
+    "phone": "+77787294818",
+    "name": "AdalAreket",
+    "source": "part_1.txt",
+    "addedAt": "2025-08-14T19:12:57.599Z",
+    "status": "active",
+    "sentCount": 1,
+    "lastSent": "2025-08-14T19:16:27.540Z"
+  },
+  {
+    "phone": "+77473522029",
+    "name": "Prizyvnik. kz",
+    "source": "part_1.txt",
+    "addedAt": "2025-08-14T19:12:57.599Z",
+    "status": "active",
+    "sentCount": 1,
+    "lastSent": "2025-08-14T19:16:29.818Z"
+  },
+  {
+    "phone": "+77010242518",
+    "name": "Alina&Partners",
+    "source": "part_1.txt",
+    "addedAt": "2025-08-14T19:12:57.600Z",
+    "status": "active",
+    "sentCount": 1,
+    "lastSent": "2025-08-14T19:16:32.097Z"
+  },
+  {
+    "phone": "+77781520413",
+    "name": "Юрист Мухамбеткалиев Д.К.",
+    "source": "part_1.txt",
+    "addedAt": "2025-08-14T19:12:57.600Z",
+    "status": "active",
+    "sentCount": 1,
+    "lastSent": "2025-08-14T19:16:34.335Z"
+  },
+  {
+    "phone": "+77771493620",
+    "name": "Палата юридических консультантов г. Астаны",
+    "source": "part_1.txt",
+    "addedAt": "2025-08-14T19:12:57.600Z",
+    "status": "active",
+    "sentCount": 1,
+    "lastSent": "2025-08-14T19:16:36.610Z"
+  },
+  {
+    "phone": "+77172725783",
+    "name": "RSM Qazaqstan",
+    "source": "part_1.txt",
+    "addedAt": "2025-08-14T19:12:57.600Z",
+    "status": "pending",
+    "sentCount": 1,
+    "lastSent": "2025-08-14T19:16:38.890Z"
+  },
+  {
+    "phone": "+77015122813",
+    "name": "NZ Cooperation",
+    "source": "part_1.txt",
+    "addedAt": "2025-08-14T19:12:57.601Z",
+    "status": "active",
+    "sentCount": 1,
+    "lastSent": "2025-08-14T19:16:41.168Z"
+  },
+  {
+    "phone": "+77005000553",
+    "name": "Юридическая компания Korgan",
+    "source": "part_1.txt",
+    "addedAt": "2025-08-14T19:12:57.601Z",
+    "status": "active",
+    "sentCount": 1,
+    "lastSent": "2025-08-14T19:16:43.682Z"
+  },
+  {
+    "phone": "+77172638070",
+    "name": "Юридическая консультация Есильского района",
+    "source": "part_1.txt",
+    "addedAt": "2025-08-14T19:12:57.601Z",
+    "status": "pending",
+    "sentCount": 1,
+    "lastSent": "2025-08-14T19:16:45.949Z"
+  },
+  {
+    "phone": "+77779504568",
+    "name": "Коллекторское агенство Legal Finance",
+    "source": "part_1.txt",
+    "addedAt": "2025-08-14T19:12:57.602Z",
+    "status": "pending",
+    "sentCount": 1,
+    "lastSent": "2025-08-14T19:16:48.229Z"
+  },
+  {
+    "phone": "+77172552868",
+    "name": "White&Case Kazakhstan LLP",
+    "source": "part_1.txt",
+    "addedAt": "2025-08-14T19:12:57.602Z",
+    "status": "pending",
+    "sentCount": 1,
+    "lastSent": "2025-08-14T19:16:50.503Z"
+  },
+  {
+    "phone": "+77007101818",
+    "name": "Адвокат Игубаев Д.Х.",
+    "source": "part_1.txt",
+    "addedAt": "2025-08-14T19:12:57.602Z",
+    "status": "active",
+    "sentCount": 1,
+    "lastSent": "2025-08-14T19:16:52.779Z"
+  },
+  {
+    "phone": "+77058138156",
+    "name": "Das.consult",
+    "source": "part_1.txt",
+    "addedAt": "2025-08-14T19:12:57.602Z",
+    "status": "active",
+    "sentCount": 1,
+    "lastSent": "2025-08-14T19:16:55.045Z"
+  },
+  {
+    "phone": "+77755463307",
+    "name": "1Solution",
+    "source": "part_1.txt",
+    "addedAt": "2025-08-14T19:12:57.603Z",
+    "status": "active",
+    "sentCount": 1,
+    "lastSent": "2025-08-14T19:16:57.330Z"
+  },
+  {
+    "phone": "+77005885858",
+    "name": "Сила Закона",
+    "source": "part_1.txt",
+    "addedAt": "2025-08-14T19:12:57.604Z",
+    "status": "active",
+    "sentCount": 1,
+    "lastSent": "2025-08-14T19:16:59.590Z"
+  },
+  {
+    "phone": "+77015003434",
+    "name": "Law Komek",
+    "source": "part_1.txt",
+    "addedAt": "2025-08-14T19:12:57.604Z",
+    "status": "active",
+    "sentCount": 1,
+    "lastSent": "2025-08-14T19:17:01.849Z"
+  },
+  {
+    "phone": "+77087010087",
+    "name": "Вранчев и Партнеры",
+    "source": "part_1.txt",
+    "addedAt": "2025-08-14T19:12:57.604Z",
+    "status": "active",
+    "sentCount": 1,
+    "lastSent": "2025-08-14T19:17:04.090Z"
+  },
+  {
+    "phone": "+77056520343",
+    "name": "APK Solution",
+    "source": "part_1.txt",
+    "addedAt": "2025-08-14T19:12:57.605Z",
+    "status": "active",
+    "sentCount": 1,
+    "lastSent": "2025-08-14T19:17:06.605Z"
+  },
+  {
+    "phone": "+77172945642",
+    "name": "Plomeria Consalting",
+    "source": "part_1.txt",
+    "addedAt": "2025-08-14T19:12:57.605Z",
+    "status": "pending",
+    "sentCount": 1,
+    "lastSent": "2025-08-14T19:17:08.879Z"
+  },
+  {
+    "phone": "+77072334455",
+    "name": "OD Consulting Ltd",
+    "source": "part_1.txt",
+    "addedAt": "2025-08-14T19:12:57.605Z",
+    "status": "active",
+    "sentCount": 1,
+    "lastSent": "2025-08-14T19:17:11.140Z"
+  },
+  {
+    "phone": "+77003456887",
+    "name": "ИП Республиканский Центр Помощи Предпринимателям",
+    "source": "part_1.txt",
+    "addedAt": "2025-08-14T19:12:57.605Z",
+    "status": "active",
+    "sentCount": 1,
+    "lastSent": "2025-08-14T19:17:13.409Z"
+  },
+  {
+    "phone": "+77072265847",
+    "name": "Адвокат Жумагулова А.З.",
+    "source": "part_1.txt",
+    "addedAt": "2025-08-14T19:12:57.605Z",
+    "status": "active",
+    "sentCount": 1,
+    "lastSent": "2025-08-14T19:17:15.683Z"
+  },
+  {
+    "phone": "+77021780808",
+    "name": "Полиграфия Вселенной",
+    "source": "part_1.txt",
+    "addedAt": "2025-08-14T19:12:57.606Z",
+    "status": "active",
+    "sentCount": 1,
+    "lastSent": "2025-08-14T19:17:17.945Z"
+  },
+  {
+    "phone": "+77756364080",
+    "name": "AE Group consulting",
+    "source": "part_1.txt",
+    "addedAt": "2025-08-14T19:12:57.606Z",
+    "status": "active",
+    "sentCount": 1,
+    "lastSent": "2025-08-14T19:17:20.213Z"
+  },
+  {
+    "phone": "+77172301912",
+    "name": "Центр приема граждан",
+    "source": "part_1.txt",
+    "addedAt": "2025-08-14T19:12:57.606Z",
+    "status": "pending",
+    "sentCount": 1,
+    "lastSent": "2025-08-14T19:17:22.481Z"
+  },
+  {
+    "phone": "+77172725250",
+    "name": "Haller Lomax",
+    "source": "part_1.txt",
+    "addedAt": "2025-08-14T19:12:57.607Z",
+    "status": "pending",
+    "sentCount": 1,
+    "lastSent": "2025-08-14T19:17:24.761Z"
+  },
+  {
+    "phone": "+77772550003",
+    "name": "Lawpartners.kz",
+    "source": "part_1.txt",
+    "addedAt": "2025-08-14T19:12:57.607Z",
+    "status": "active",
+    "sentCount": 1,
+    "lastSent": "2025-08-14T19:17:27.023Z"
   }
 ]

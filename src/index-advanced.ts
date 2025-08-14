@@ -6,6 +6,17 @@ import { initGemini, generateGeminiResponse } from "./providers/gemini";
 import config from "./config";
 import ContactManager from './utils/contact-manager';
 
+// Интерфейс для контакта
+interface Contact {
+    phone: string;
+    name?: string;
+    source?: string;
+    addedAt: Date;
+    lastSent?: Date;
+    status: 'active' | 'blocked' | 'invalid' | 'pending';
+    sentCount: number;
+}
+
 let botReadyTimestamp: Date | null = null;
 let contactManager: ContactManager;
 
@@ -162,6 +173,11 @@ const start = async () => {
                 return
             }
 
+            if (messageText === '!quickvalidate') {
+                await handleQuickValidate(sock, message)
+                return
+            }
+
             if (messageText === '!cleaninvalid') {
                 await handleCleanInvalidContacts(sock, message)
                 return
@@ -294,7 +310,7 @@ ${config.massMessageText3}
 }
 
 const handleTestPersonalization = async (sock: any, message: any) => {
-    const contacts = contactManager.getAllContacts().slice(0, 3) // Берем первые 3 контакта
+    const contacts: Contact[] = contactManager.getAllContacts().slice(0, 3) // Берем первые 3 контакта
     
     if (contacts.length === 0) {
         await sendReply(sock, message, 'Нет контактов для тестирования персонализации')
@@ -336,7 +352,7 @@ const handleSimpleAutoSending = async (sock: any, message: any) => {
     const intervalMinutes = intervalMs / 1000 / 60
     const messageText = config.massMessageText
 
-    const allContacts = contactManager.getContactsForSending(1000) // Получаем все контакты
+    const allContacts: Contact[] = contactManager.getContactsForSending(1000) // Получаем все контакты
     
     if (allContacts.length === 0) {
         await sendReply(sock, message, 'Нет контактов для рассылки')
@@ -344,7 +360,7 @@ const handleSimpleAutoSending = async (sock: any, message: any) => {
     }
 
     // Разбиваем на батчи
-    const batches = []
+    const batches: Contact[][] = []
     for (let i = 0; i < allContacts.length; i += batchSize) {
         batches.push(allContacts.slice(i, i + batchSize))
     }
@@ -532,7 +548,7 @@ const handleScanUploads = async (sock: any, message: any) => {
 }
 
 const handleListContacts = async (sock: any, message: any) => {
-    const contacts = contactManager.getAllContacts()
+    const contacts: Contact[] = contactManager.getAllContacts()
     
     if (contacts.length === 0) {
         await sendReply(sock, message, '📱 Список контактов пуст')
@@ -613,7 +629,7 @@ const handleClearConfirm = async (sock: any, message: any) => {
 }
 
 const handleValidateContacts = async (sock: any, message: any) => {
-    const allContacts = contactManager.getAllContacts()
+    const allContacts: Contact[] = contactManager.getAllContacts()
     
     if (allContacts.length === 0) {
         await sendReply(sock, message, 'Нет контактов для валидации')
@@ -626,13 +642,13 @@ const handleValidateContacts = async (sock: any, message: any) => {
     let invalidNumbers = 0
     let whatsappChecked = 0
     let whatsappValid = 0
+    let whatsappInvalid = 0
     
-    const maxWhatsAppChecks = 20 // Ограничиваем проверки WhatsApp
-    
+    // Убираем ограничение - проверяем ВСЕ номера
     for (let i = 0; i < allContacts.length; i++) {
         const contact = allContacts[i]
         
-        // Проверяем формат номера (добавляем простую проверку)
+        // Проверяем формат номера
         if (!isValidMobileNumber(contact.phone)) {
             invalidNumbers++
             markContactAsInvalid(contact.phone)
@@ -641,46 +657,101 @@ const handleValidateContacts = async (sock: any, message: any) => {
         
         validNumbers++
         
-        // Проверяем в WhatsApp (ограниченно)
-        if (whatsappChecked < maxWhatsAppChecks) {
-            try {
-                const isInWhatsApp = await validateWhatsAppNumber(contact.phone, sock)
-                if (isInWhatsApp) {
-                    whatsappValid++
-                    contactManager.markMessageSent(contact.phone, true)
-                } else {
-                    contactManager.markMessageSent(contact.phone, false)
-                }
-                whatsappChecked++
-                
-                // Пауза между проверками
-                await new Promise(resolve => setTimeout(resolve, 1000))
-                
-                // Показываем прогресс
-                if (whatsappChecked % 5 === 0) {
-                    await sendReply(sock, message, `⏳ Проверено в WhatsApp: ${whatsappChecked}/${maxWhatsAppChecks}`)
-                }
-            } catch (error) {
-                // Игнорируем ошибки проверки WhatsApp
+        // Проверяем в WhatsApp КАЖДЫЙ номер
+        try {
+            const isInWhatsApp = await validateWhatsAppNumber(contact.phone, sock)
+            if (isInWhatsApp) {
+                whatsappValid++
+                contactManager.markMessageSent(contact.phone, true)
+            } else {
+                whatsappInvalid++
+                contactManager.markMessageSent(contact.phone, false)
+            }
+            whatsappChecked++
+            
+            // Показываем прогресс каждые 10 номеров
+            if (whatsappChecked % 10 === 0) {
+                await sendReply(sock, message, `⏳ Проверено в WhatsApp: ${whatsappChecked}/${allContacts.length} (✅${whatsappValid} ❌${whatsappInvalid})`)
+            }
+            
+            // Пауза между проверками чтобы не заблокировали
+            await new Promise(resolve => setTimeout(resolve, 2000)) // 2 секунды
+            
+        } catch (error: any) {
+            // При ошибке помечаем как недоступный
+            whatsappInvalid++
+            whatsappChecked++
+            contactManager.markMessageSent(contact.phone, false)
+            
+            // Если слишком много ошибок подряд - увеличиваем паузу
+            if (error.message.includes('rate') || error.message.includes('limit')) {
+                await sendReply(sock, message, '⚠️ Обнаружено ограничение скорости, увеличиваю паузу...')
+                await new Promise(resolve => setTimeout(resolve, 10000)) // 10 секунд пауза
             }
         }
     }
 
     const report = `
-📊 РЕЗУЛЬТАТ ВАЛИДАЦИИ:
+📊 ПОЛНАЯ ВАЛИДАЦИЯ ЗАВЕРШЕНА:
 
 📱 ФОРМАТ НОМЕРОВ:
 ✅ Валидных: ${validNumbers}
 ❌ Невалидных: ${invalidNumbers}
 
-💬 ПРОВЕРКА WHATSAPP (${whatsappChecked} из ${validNumbers}):
-✅ Активных: ${whatsappValid}
-❌ Неактивных: ${whatsappChecked - whatsappValid}
+💬 ПРОВЕРКА WHATSAPP (${whatsappChecked} номеров):
+✅ Активных в WhatsApp: ${whatsappValid}
+❌ Неактивных в WhatsApp: ${whatsappInvalid}
+
+📈 ИТОГО:
+• Всего проверено: ${allContacts.length}
+• Готовых к рассылке: ${whatsappValid}
+• Процент валидных: ${Math.round((whatsappValid / allContacts.length) * 100)}%
 
 🎯 РЕКОМЕНДАЦИИ:
 • Используйте !cleaninvalid для удаления невалидных
 • Используйте !clean для удаления заблокированных
-• Проверьте остальные номера командой !check
+• Готово к рассылке: ${whatsappValid} номеров
+    `
+    
+    await sendReply(sock, message, report)
+}
+
+// Быстрая валидация только формата
+const handleQuickValidate = async (sock: any, message: any) => {
+    const allContacts: Contact[] = contactManager.getAllContacts()
+    
+    if (allContacts.length === 0) {
+        await sendReply(sock, message, 'Нет контактов для валидации')
+        return
+    }
+
+    await sendReply(sock, message, `🔍 Быстрая валидация формата ${allContacts.length} номеров...`)
+    
+    let validNumbers = 0
+    let invalidNumbers = 0
+    
+    for (const contact of allContacts) {
+        if (!isValidMobileNumber(contact.phone)) {
+            invalidNumbers++
+            markContactAsInvalid(contact.phone)
+        } else {
+            validNumbers++
+        }
+    }
+
+    const report = `
+📊 БЫСТРАЯ ВАЛИДАЦИЯ ЗАВЕРШЕНА:
+
+📱 ФОРМАТ НОМЕРОВ:
+✅ Валидных: ${validNumbers}
+❌ Невалидных: ${invalidNumbers}
+
+📈 ПРОЦЕНТ ВАЛИДНЫХ: ${Math.round((validNumbers / allContacts.length) * 100)}%
+
+🎯 КОМАНДЫ:
+• !cleaninvalid - удалить невалидные
+• !validate - полная проверка с WhatsApp
+• !autostart - запустить рассылку
     `
     
     await sendReply(sock, message, report)
@@ -741,7 +812,7 @@ const cleanInvalidContacts = (): number => {
 
 const handleSmartSending = async (sock: any, message: any, messageToSend: string) => {
     // Автоматический умный батч
-    const contacts = contactManager.getContactsForSending()
+    const contacts: Contact[] = contactManager.getContactsForSending()
     
     if (contacts.length === 0) {
         await sendReply(sock, message, 'Нет контактов для рассылки')
@@ -767,7 +838,7 @@ const handleBatchSending = async (sock: any, message: any, text: string) => {
         return
     }
 
-    const contacts = contactManager.getContactsForSending(batchSize)
+    const contacts: Contact[] = contactManager.getContactsForSending(batchSize)
     
     if (contacts.length === 0) {
         await sendReply(sock, message, 'Нет контактов для рассылки')
@@ -784,7 +855,7 @@ const handleBatchSending = async (sock: any, message: any, text: string) => {
 }
 
 // Умная отправка батча с персонализацией
-const sendSmartBatch = async (sock: any, message: any, contacts: any[], messageTemplate: string) => {
+const sendSmartBatch = async (sock: any, message: any, contacts: Contact[], messageTemplate: string) => {
     await sendReply(sock, message, `🚀 Начинаю персонализированную рассылку по ${contacts.length} контактам...`)
 
     let success = 0
@@ -886,7 +957,8 @@ const handleAdvancedHelp = async (sock: any, message: any) => {
 !import путь/файл.txt - Импорт из файла
 !scan - Сканировать папку uploads/
 !list - Показать контакты
-!validate - Валидировать все номера
+!quickvalidate - Быстрая проверка формата
+!validate - Полная валидация (формат + WhatsApp)
 !clean - Удалить заблокированные
 !cleaninvalid - Удалить невалидные номера
 !clear - Очистить ВСЕ контакты
@@ -905,7 +977,7 @@ const handleAdvancedHelp = async (sock: any, message: any) => {
 !batch 15 ТЕКСТ - Конкретный размер батча
 
 🤖 АВТОМАТИЧЕСКАЯ РАССЫЛКА:
-!autostart - Запустить автоматическую рассылку (настройки из .env)
+!autostart - Запустить автоматическую рассылку
 !autostop - Остановить автоматическую рассылку
 !autostatus - Статус и настройки рассылки
 
@@ -916,13 +988,14 @@ const handleAdvancedHelp = async (sock: any, message: any) => {
 • Автоответы ИИ ОТКЛЮЧЕНЫ
 • Бот НЕ отвечает на обычные сообщения
 • Только рассылка и управление контактами
-• AI доступен только владельцу
 
-📋 ПРИМЕРЫ:
-!scan
-!autostart - запустить автоматическую рассылку
-!autostatus - проверить статус
-!autostop - остановить рассылку
+📋 РЕКОМЕНДУЕМАЯ ПОСЛЕДОВАТЕЛЬНОСТЬ:
+1. !scan - импорт номеров
+2. !quickvalidate - проверка формата
+3. !cleaninvalid - удаление невалидных
+4. !validate - полная проверка WhatsApp
+5. !clean - удаление заблокированных
+6. !autostart - запуск рассылки
 
 ⚡ ЛИМИТЫ БЕЗОПАСНОСТИ:
 • Максимум 10 номеров за раз
