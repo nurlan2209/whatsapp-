@@ -248,6 +248,65 @@ const start = async () => {
                 return;
             }
 
+            if (messageText === '!resetsent') {
+                await handleResetSentStatus(sock, message);
+                return;
+            }
+
+            if (messageText === '!continue') {
+                const stats = contactManager.getStats();
+                const allContacts = contactManager.getAllContacts().filter(c => c.status === 'active');
+                const sentContacts = allContacts.filter(c => c.lastSent);
+                const unsentContacts = allContacts.filter(c => !c.lastSent);
+                
+                await sendReply(sock, message, `
+            📊 СОСТОЯНИЕ РАССЫЛКИ:
+
+            📱 Всего активных: ${allContacts.length}
+            ✅ Уже отправлено: ${sentContacts.length} контактам  
+            ⏳ Осталось: ${unsentContacts.length} контактам
+            📤 Лимит сегодня: ${stats.sending.sentToday}/${stats.sending.dailyLimit}
+
+            🚀 Для продолжения: !autostart
+                `);
+                return;
+            }
+
+            if (messageText === '!debug') {
+                const allContacts = contactManager.getAllContacts().filter(c => c.status === 'active');
+                const sentContacts = allContacts.filter(c => c.lastSent);
+                const unsentContacts = allContacts.filter(c => !c.lastSent);
+                
+                let response = `🔍 ОТЛАДКА КОНТАКТОВ:\n\n`;
+                response += `✅ ОТПРАВЛЕНО (${sentContacts.length}):\n`;
+                sentContacts.slice(0, 15).forEach((contact, i) => {
+                    response += `${i+1}. ${contact.phone} (${contact.name})\n`;
+                });
+                
+                response += `\n⏳ НЕ ОТПРАВЛЕНО (${unsentContacts.length}):\n`;
+                unsentContacts.slice(0, 15).forEach((contact, i) => {
+                    response += `${i+1}. ${contact.phone} (${contact.name})\n`;
+                });
+                
+                await sendReply(sock, message, response);
+                return;
+            }
+
+            if (messageText === '!markfirst10') {
+                const allContacts = contactManager.getAllContacts().filter(c => c.status === 'active');
+                const first10 = allContacts.slice(0, 9);
+                
+                first10.forEach(contact => {
+                    contact.lastSent = new Date();
+                    contact.sentCount = 1;
+                });
+                
+                contactManager.saveContacts();
+                
+                await sendReply(sock, message, `✅ Помечены первые 10 контактов как отправленные:\n${first10.map(c => `• ${c.phone} (${c.name})`).join('\n')}`);
+                return;
+            }
+
             // === AI КОМАНДЫ ===
 
             if (messageText.startsWith('!ai') || messageText.startsWith('!gpt')) {
@@ -593,16 +652,16 @@ const handleSimpleAutoSending = async (sock, message) => {
         return;
     }
 
-    // Все настройки берем из .env
     const batchSize = parseInt(process.env.MAX_NUMBERS_PER_BATCH || '10');
-    const intervalMs = parseInt(process.env.BATCH_COOLDOWN || '900000'); // 15 минут по умолчанию
+    const intervalMs = parseInt(process.env.BATCH_COOLDOWN || '900000');
     const intervalMinutes = intervalMs / 1000 / 60;
     const messageText = config.massMessageText;
 
-    // УМНАЯ ЛОГИКА: Получаем контакты которым ещё НЕ отправляли
     const allActiveContacts = contactManager.getAllContacts().filter(c => c.status === 'active');
-    const unsentContacts = allActiveContacts.filter(c => !c.lastSent); // Те кому НЕ отправляли
-    const sentContacts = allActiveContacts.filter(c => c.lastSent); // Те кому УЖЕ отправляли
+    
+    // ПРАВИЛЬНАЯ ЛОГИКА: Ищем контакты которым НЕ отправляли (без lastSent)
+    const unsentContacts = allActiveContacts.filter(c => !c.lastSent);
+    const sentContacts = allActiveContacts.filter(c => c.lastSent);
     
     if (allActiveContacts.length === 0) {
         await sendReply(sock, message, 'Нет активных контактов для рассылки. Сначала запустите !validate');
@@ -1139,6 +1198,29 @@ const handleBatchSending = async (sock, message, text) => {
     }
 
     await sendSmartBatch(sock, message, contacts, messageToSend);
+};
+
+const handleResetSentStatus = async (sock, message) => {
+    const allContacts = contactManager.getAllContacts();
+    let resetCount = 0;
+    
+    allContacts.forEach(contact => {
+        contact.sentCount = 0;
+        delete contact.lastSent;
+        resetCount++;
+    });
+    
+    contactManager.saveContacts();
+    
+    await sendReply(sock, message, `
+🔄 СБРОС СТАТУСА ОТПРАВКИ:
+
+📱 Сброшено у контактов: ${resetCount}
+📊 Всего контактов: ${allContacts.length}
+
+✅ Теперь можно начать рассылку заново!
+🚀 Используй: !autostart
+    `);
 };
 
 const sendReply = async (sock, message, text) => {
